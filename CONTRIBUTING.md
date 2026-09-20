@@ -14,7 +14,11 @@ git pull --ff-only origin dev
 git switch -c feat/nombre-del-componente
 ```
 
-Prefijos: feat/ funcionalidad, fix/ correccion, chore/ configuracion, docs/ documentacion.
+Fases acordadas: feature/fase1-interfaz (Gerardo), feature/fase2-integracion
+(Sebastian) y feature/fase3-pruebas-documentacion (Gerardo). Crear cada rama desde
+dev actualizado al iniciar la fase. El otro integrante revisa su PR.
+
+Prefijos para tareas adicionales: feat/ funcionalidad, fix/ correccion, chore/ configuracion, docs/ documentacion.
 Commits: feat: descripcion, fix: descripcion, chore: descripcion, docs: descripcion.
 
 ## Revision
@@ -26,8 +30,8 @@ Commits: feat: descripcion, fix: descripcion, chore: descripcion, docs: descripc
 5. Resolver comentarios, integrar con squash y borrar la rama terminada.
 6. Actualizar dev local antes de crear otra rama.
 
-La CI verifica formato, lint, tipos y build. Al agregar comportamiento, incorporar
-pruebas relevantes y su comando a check y CI; no considerar el build una prueba funcional.
+La CI verifica formato, lint, pruebas de filtros/vista previa, tipos y build.
+Al agregar comportamiento, ampliar las pruebas relevantes; no considerar el build una prueba funcional.
 
 ## Entrega final
 

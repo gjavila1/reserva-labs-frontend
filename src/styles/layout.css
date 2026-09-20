@@ -1,0 +1,346 @@
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  max-width: 1320px;
+  margin: auto;
+  padding: 0 40px;
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 55px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 23px;
+  letter-spacing: -0.8px;
+  font-weight: 750;
+}
+.brand-light {
+  font-weight: 400;
+}
+.brand-mark {
+  display: grid;
+  grid-template-columns: repeat(2, 8px);
+  gap: 4px;
+  margin-right: 12px;
+  transform: rotate(-8deg);
+}
+.brand-mark span {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.brand-mark span:last-child {
+  opacity: 0.45;
+}
+.header-inner nav {
+  display: flex;
+  align-self: stretch;
+  align-items: stretch;
+  gap: 27px;
+}
+.header-inner nav a,
+.header-inner nav button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 3px 0 0;
+  font-size: 13px;
+  text-decoration: none;
+}
+.header-inner nav a[aria-current] {
+  border-bottom-color: var(--accent);
+  font-weight: 650;
+}
+.header-inner nav button:hover {
+  color: var(--accent);
+}
+.campus-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+.discovery-header {
+  background: #f5f1ec;
+  border-bottom: 1px solid #e9e2da;
+}
+.discovery-inner {
+  max-width: 1320px;
+  margin: auto;
+  padding: 30px 40px;
+}
+.discovery-inner .eyebrow {
+  color: #806359;
+}
+.discovery-inner h1 {
+  font-size: 36px;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: -1.55px;
+  margin: 13px 0 15px;
+}
+.discovery-inner h1 span {
+  color: #8b4245;
+}
+.page-description {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #645e5b;
+}
+.availability-search {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.85fr 1fr auto;
+  align-items: stretch;
+  background: #fff;
+  border: 1px solid #d6ceca;
+  border-radius: 5px;
+  padding: 7px;
+  margin-top: 29px;
+  box-shadow: 0 4px 12px #34291f06;
+}
+.availability-search label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 17px;
+  border-right: 1px solid var(--line);
+  min-width: 0;
+}
+.availability-search label > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.availability-search input,
+.availability-search select {
+  width: 100%;
+  min-width: 0;
+  min-height: 30px;
+  border: 0;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+.availability-search .button {
+  margin-left: 8px;
+}
+.content-inner {
+  max-width: 1320px;
+  margin: auto;
+  padding: 0 40px;
+}
+.demo-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+.demo-notice > span {
+  white-space: nowrap;
+  color: #87644c;
+  letter-spacing: 0.7px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.demo-notice p {
+  line-height: 1.6;
+}
+.guide {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.guide ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.booking-explainer {
+  margin: 43px 0 0;
+  padding: 30px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 45px;
+  border-top: 1px solid var(--line);
+}
+.booking-explainer > div {
+  position: relative;
+  padding-left: 35px;
+}
+.booking-explainer > div > span {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  color: #9b555b;
+  font-size: 12px;
+  font-weight: 650;
+}
+.booking-explainer h3 {
+  font-size: 14px;
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+.booking-explainer p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.page-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 23px 0;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.page-footer strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+@media (min-width: 1450px) {
+  .discovery-inner {
+    padding-block: 36px;
+  }
+}
+@media (max-width: 1000px) {
+  .header-inner {
+    gap: 30px;
+  }
+  .campus-label {
+    display: none;
+  }
+  .availability-search {
+    grid-template-columns: 1.15fr 1fr 0.85fr 1fr;
+  }
+  .availability-search .button {
+    grid-column: 1/-1;
+    margin: 8px 0 0;
+    min-height: 44px;
+  }
+  .availability-search label:last-of-type {
+    border: 0;
+  }
+  .discovery-inner h1 {
+    font-size: 38px;
+  }
+}
+@media (max-width: 650px) {
+  .header-inner {
+    padding: 16px 20px 0;
+    display: block;
+  }
+  .brand {
+    font-size: 22px;
+  }
+  .header-inner nav {
+    margin-top: 12px;
+    gap: 24px;
+  }
+  .header-inner nav a,
+  .header-inner nav button {
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .discovery-inner {
+    padding: 28px 20px;
+  }
+  .discovery-inner h1 {
+    font-size: 32px;
+    letter-spacing: -1px;
+  }
+  .discovery-inner .eyebrow {
+    font-size: 9px;
+  }
+  .page-description {
+    font-size: 13px;
+    max-width: 330px;
+  }
+  .availability-search {
+    grid-template-columns: 1fr 1fr;
+    margin-top: 22px;
+    padding: 6px;
+  }
+  .availability-search label {
+    padding: 8px 9px;
+  }
+  .availability-search label:nth-child(2) {
+    border-right: 0;
+  }
+  .availability-search label:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+  .availability-search input,
+  .availability-search select {
+    font-size: 16px;
+  }
+  .availability-search .button {
+    margin-top: 6px;
+  }
+  .content-inner {
+    padding: 0 20px;
+  }
+  .demo-notice {
+    display: block;
+    padding-block: 12px;
+  }
+  .demo-notice p {
+    margin-top: 4px;
+  }
+  .booking-explainer {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    margin-top: 25px;
+    padding-block: 24px;
+  }
+  .booking-explainer p {
+    max-width: 340px;
+  }
+  .page-footer {
+    display: block;
+    font-size: 10px;
+  }
+  .page-footer > span {
+    display: block;
+  }
+  .page-footer > span + span {
+    margin-top: 5px;
+  }
+}
+@media (max-width: 350px) {
+  .content-inner,
+  .discovery-inner {
+    padding-inline: 16px;
+  }
+  .header-inner {
+    padding-inline: 16px;
+  }
+  .discovery-inner h1 {
+    font-size: 29px;
+  }
+  .availability-search label {
+    padding-inline: 5px;
+  }
+}

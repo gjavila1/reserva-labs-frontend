@@ -5,9 +5,17 @@ El backend pertenece a otro repositorio y no esta incluido.
 
 ## Estado actual
 
-Solo esqueleto: sin pantallas, componentes de negocio, datos simulados ni llamadas API.
-Al abrir el servidor se muestra una pagina vacia de forma intencional.
-main y dev nacen del mismo commit inicial; el trabajo futuro se hace desde dev.
+Fase 1: interfaz de laboratorios y formulario de vista previa, sin llamadas API ni
+persistencia. main conserva el esqueleto; esta fase se revisa mediante PR hacia dev.
+
+Con npm run dev hay cuatro laboratorios de demostracion con imagenes y horarios.
+Se busca por fecha, hora, duracion y personas; se filtra por nombre y edificio.
+Al elegir una hora aparece el formulario. Revisar mi solicitud muestra una vista
+previa con feedback visual, sin enviar ni guardar reservas.
+
+Con npm run build y npm run preview no se muestra el catalogo ficticio: aparece el
+estado vacio hasta integrar la API en fase 2. Las imagenes ilustrativas se conservan
+en public/images; su origen y prompts estan en docs/IMAGENES.md.
 
 ## Requisitos y arranque
 
@@ -24,27 +32,32 @@ Actualmente la aplicacion no consume esa variable ni necesita un backend para ar
 
 ## Comandos
 
-| Comando              | Proposito                           |
-| -------------------- | ----------------------------------- |
-| npm run dev          | Servidor local                      |
-| npm run format       | Aplicar formato                     |
-| npm run format:check | Comprobar formato                   |
-| npm run lint         | ESLint, sin advertencias permitidas |
-| npm run typecheck    | Comprobar TypeScript                |
-| npm run build        | Comprobar tipos y compilar          |
-| npm run preview      | Previsualizar build local           |
-| npm run check        | Formato, lint y build con tipos     |
+| Comando              | Proposito                                |
+| -------------------- | ---------------------------------------- |
+| npm run dev          | Servidor local                           |
+| npm run format       | Aplicar formato                          |
+| npm run format:check | Comprobar formato                        |
+| npm run lint         | ESLint, sin advertencias permitidas      |
+| npm run typecheck    | Comprobar TypeScript                     |
+| npm run build        | Comprobar tipos y compilar               |
+| npm run preview      | Previsualizar build local                |
+| npm run check        | Formato, lint, pruebas y build con tipos |
 
-No hay pruebas funcionales porque aun no hay funcionalidades.
+Ejecutar npm test para las once pruebas de filtros, vista previa y solapamiento
+de horarios de demostracion (runner nativo de Node 24, sin dependencias nuevas).
 
 ## Estructura
 
-- src/app: composicion principal; App devuelve null durante esta etapa.
-- src/features: futuras funcionalidades (salas, reservas), creadas cuando se trabajen.
-- src/shared/ui: futuros componentes reutilizables.
+- src/app: composicion, navegacion y estado de seleccion del laboratorio.
+- src/features/salas: tipo Sala, fixtures, filtros, tarjetas y catalogo.
+- src/features/reservas: formulario, tipos, validacion y agenda de demostracion.
+- src/shared/ui: iconos SVG reutilizables.
 - src/shared/api: futuro cliente HTTP compartido.
 - src/shared/config: futura configuracion centralizada.
-- src/styles: estilos globales minimos.
+- src/styles: estilos base, layout, catalogo y formulario, con reglas responsive.
+- tests: casos de filtros, sala invalida, texto vacio y rango de fechas.
+
+Consultar docs/FASE1.md para el alcance y las comprobaciones de esta entrega.
 
 ## Colaboracion
 
@@ -54,25 +67,28 @@ CLAUDE.md conserva las reglas de oro solicitadas en la guia del curso.
 ```text
 main (esqueleto hasta entrega)
   dev (integracion / preproduccion)
-    feat/componente -> PR a dev
-    fix/correccion  -> PR a dev
-    chore/tarea     -> PR a dev
+    feature/fase1-interfaz -> PR a dev
+    feature/fase2-integracion -> PR a dev
+    feature/fase3-pruebas-documentacion -> PR a dev
   dev -> PR final a main
 ```
 
-## Publicar el repositorio cuando el equipo lo cree
+## Repositorio compartido
 
-Crear un repositorio vacio llamado reserva-labs-frontend, sin README generado.
-Sustituir la URL del ejemplo por la real:
+Repositorio: https://github.com/gjavila1/reserva-labs-frontend
+
+Para una nueva copia de trabajo:
 
 ```sh
-git remote add origin https://github.com/USUARIO/reserva-labs-frontend.git
-git push -u origin main
-git push -u origin dev
+git clone https://github.com/gjavila1/reserva-labs-frontend.git
+cd reserva-labs-frontend
+git switch dev
+npm ci
 ```
 
-Agregar al companero como colaborador, establecer dev como predeterminada y activar
-las protecciones descritas en CONTRIBUTING.md. No hay remoto ni despliegue configurados.
+Las ramas de trabajo salen de dev. No fusionar cambios directamente en main.
+Las protecciones descritas en CONTRIBUTING.md deben verificarse en GitHub;
+los archivos locales no las activan. Esta fase no configura despliegues.
 
 ## Fuentes de configuracion
 

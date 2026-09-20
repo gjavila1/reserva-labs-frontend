@@ -2,14 +2,16 @@
 
 ## Alcance actual
 
-Solo preparar y mantener el esqueleto. No implementar pantallas, componentes de negocio,
-reservas ni conexion al backend hasta que el usuario solicite esa tarea.
+Fase 1 autorizada: interfaz, componentes reutilizables, catalogo y formulario con vista
+previa. Datos de demostracion solo en desarrollo. No conectar API, persistir reservas
+ni declarar reservas confirmadas; esa integracion corresponde a fase 2.
 
 ## Flujo Git obligatorio
 
 - main conserva el esqueleto inicial hasta la entrega final.
 - dev integra el trabajo y representa preproduccion; una rama no equivale a un despliegue.
-- Crear ramas cortas desde dev actualizado: feat/nombre, fix/nombre, chore/nombre o docs/nombre.
+- Crear ramas desde dev actualizado. Fases acordadas: feature/fase1-interfaz,
+  feature/fase2-integracion y feature/fase3-pruebas-documentacion.
 - Los PR habituales apuntan a dev y los revisa el otro integrante.
 - El unico PR de entrega a main sale de dev, cuando el equipo lo acuerde y todo este probado.
 - No hacer push directo a main o dev ni fusionar PR sin la revision acordada.
@@ -37,7 +39,18 @@ reservas ni conexion al backend hasta que el usuario solicite esa tarea.
 ## Comprobaciones y responsabilidad
 
 - Antes de proponer un PR ejecutar npm run check y revisar git diff.
-- Agregar pruebas relevantes cuando se implemente comportamiento; el esqueleto no tiene pruebas funcionales.
+- Agregar pruebas relevantes cuando se implemente comportamiento; npm test verifica filtros y vista previa.
 - Seguir Plan -> Work -> Review -> Compound y registrar decisiones, alternativas y dudas en el PR.
 - Mantener CONTRIBUTING.md y CLAUDE.md coherentes con estas reglas.
 - Informar que se comprobo y que no pudo verificarse; no afirmar que hay protecciones remotas sin comprobarlas.
+
+## Criterio visual acordado
+
+- Priorizar busqueda por horario y tarjetas de laboratorio con acciones visibles.
+- Referencia visual: OpenTable. Abrir el formulario despues de elegir un horario.
+- Las tarjetas representan espacios reales del catalogo; las imagenes y la agenda
+  actuales son ilustrativas y no deben presentarse como datos reales.
+- Usar jerarquia tipografica, alineacion y separadores; evitar tarjetas anidadas,
+  decoracion innecesaria, radios excesivos y apariencia de dashboard generico.
+- Mantener contraste, foco visible, objetivos tactiles y reorganizacion responsive.
+- No reescribir logica funcional ni agregar dependencias por cambios de apariencia.

@@ -1,0 +1,151 @@
+.booking-dialog {
+  width: min(510px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  border: 0;
+  border-radius: 8px;
+  padding: 27px 30px 25px;
+  color: var(--ink);
+  background: white;
+  box-shadow: 0 20px 90px #0003;
+  overflow: auto;
+}
+.booking-dialog::backdrop {
+  background: #172030b8;
+}
+.dialog-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+.dialog-top .eyebrow {
+  font-size: 9px;
+  color: var(--muted);
+}
+.booking-dialog h2 {
+  font-size: 27px;
+  line-height: 1.25;
+  letter-spacing: -0.8px;
+  font-weight: 700;
+}
+.dialog-note {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.selected-space {
+  margin: 23px 0;
+  padding: 18px 0;
+  border-block: 1px solid var(--line);
+}
+.selected-space > span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.selected-space h3 {
+  font-size: 18px;
+  margin: 7px 0 13px;
+}
+.selected-space p {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.8;
+  margin-top: 4px;
+}
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 19px;
+  min-width: 0;
+}
+.form-field label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 12px;
+  border: 1px solid #c7cad1;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--ink);
+  background: #fff;
+}
+.form-field textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+.form-field [aria-invalid='true'] {
+  border-color: var(--danger);
+}
+.field-error {
+  font-size: 12px;
+  color: var(--danger);
+  line-height: 1.5;
+}
+.required-note {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-top: 12px;
+}
+.success-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #286448;
+  background: #e7f1eb;
+  margin-bottom: 18px;
+}
+.preview-details {
+  margin: 23px 0;
+  padding: 15px 0;
+  border-block: 1px solid var(--line);
+}
+.preview-details > div {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 15px;
+  padding: 8px 0;
+}
+.preview-details dt {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.preview-details dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+@media (max-width: 600px) {
+  .booking-dialog {
+    padding: 20px;
+  }
+  .booking-dialog h2 {
+    font-size: 25px;
+  }
+  .form-field input,
+  .form-field textarea {
+    font-size: 16px;
+  }
+  .preview-details > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+  .dialog-top {
+    margin-bottom: 12px;
+  }
+}
