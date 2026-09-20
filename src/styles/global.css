@@ -1,0 +1,8 @@
+/* Base visual minima. Los estilos de los componentes se agregaran por tarea. */
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
