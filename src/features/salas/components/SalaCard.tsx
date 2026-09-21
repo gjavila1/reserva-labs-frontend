@@ -41,6 +41,8 @@ export function SalaCard({
   query: BusquedaHorario
   onSelect: (selection: SeleccionHorario) => void
 }) {
+  // Calcula que horas siguen libres para esta sala segun la busqueda
+  // actual y cuantas reservas tiene ese mismo dia.
   const detail = presentation[sala.id]
   const slots = slotsDisponibles(sala, query)
   const available = slots.some((slot) => slot.available)
@@ -78,6 +80,7 @@ export function SalaCard({
           <span>{query.duracion} h</span>
         </div>
         <div className="slot-list">
+          {/* Muestra cada hora posible como un boton y desactiva las horas ocupadas. */}
           {slots.map((slot) => (
             <button
               key={slot.hora}

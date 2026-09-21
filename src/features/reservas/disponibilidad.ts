@@ -15,6 +15,7 @@ export interface HorarioSlot {
   fin: string
 }
 
+// Compara la fecha de una reserva con la fecha que el usuario esta buscando.
 function esMismaFechaLocal(fecha: Date, fechaConsultada: string): boolean {
   const [year, month, day] = fechaConsultada.split('-').map(Number)
   return (
@@ -52,6 +53,7 @@ export function slotsDisponibles(
   }))
 }
 
+// Cuenta cuantas reservas tiene esa sala en la fecha que se esta consultando.
 export function reservasDelDia(sala: SalaConReservas, fecha: string): number {
   return intervalosOcupados(sala, fecha).length
 }

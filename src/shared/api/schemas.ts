@@ -1,10 +1,8 @@
 import { z } from 'zod'
 
-/**
- * Contrato documentado en la guia del curso (Fases 1-3 del backend).
- * GET /api/salas incluye las reservas de cada sala (prisma include: { reservas: true }).
- * Pendiente de confirmar contra el backend real: ver docs/FASE2.md.
- */
+// Describe como debe verse una reserva que llega desde el servidor.
+// Sigue el contrato de la guia del curso, todavia pendiente de confirmar
+// con el equipo que construye el servidor real, segun se explica en docs/FASE2.md.
 export const reservaApiSchema = z.object({
   id: z.number().int().positive(),
   responsable: z.string(),
@@ -14,6 +12,7 @@ export const reservaApiSchema = z.object({
   salaId: z.number().int().positive(),
 })
 
+// Describe como debe verse un laboratorio, junto con sus reservas del dia.
 export const salaApiSchema = z.object({
   id: z.number().int().positive(),
   nombre: z.string(),
@@ -22,6 +21,7 @@ export const salaApiSchema = z.object({
   reservas: z.array(reservaApiSchema),
 })
 
+// Describe la lista completa de laboratorios que devuelve el servidor.
 export const salasApiSchema = z.array(salaApiSchema)
 
 export type ReservaApi = z.infer<typeof reservaApiSchema>

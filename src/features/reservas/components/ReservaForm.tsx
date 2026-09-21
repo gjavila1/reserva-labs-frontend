@@ -42,6 +42,8 @@ export function ReservaForm({
     event.preventDefault()
     if (estado === 'enviando') return
 
+    // Revisa los datos escritos antes de enviar nada al servidor y
+    // pone el foco en el primer campo con problemas si los hay.
     const { errors: nextErrors, data } = validateReservaForm({
       salaId: String(selection.sala.id),
       responsable: fields.responsable,
@@ -58,6 +60,8 @@ export function ReservaForm({
     }
     if (!data) return
 
+    // Bloquea el boton mientras se envia la reserva para evitar que se
+    // mande dos veces por error.
     setEstado('enviando')
     setMensajeError('')
     const payload: CrearReservaPayload = {
@@ -72,11 +76,13 @@ export function ReservaForm({
       setEstado('exito')
       onBooked()
     } catch (cause) {
+      // Alguien tomo ese horario mientras se completaba el formulario.
       if (cause instanceof ApiError && cause.status === 409) {
         setEstado('conflicto')
         setMensajeError(cause.message)
         return
       }
+      // El servidor encontro datos invalidos y avisa que campo tiene el problema.
       if (cause instanceof ApiError && cause.status === 400 && cause.detalles) {
         const serverErrors: ReservaErrors = {}
         for (const key of Object.keys(
@@ -90,6 +96,7 @@ export function ReservaForm({
         setMensajeError(cause.message)
         return
       }
+      // Cualquier otro problema, como una caida del servidor.
       setEstado('error')
       setMensajeError(
         cause instanceof Error
@@ -99,6 +106,8 @@ export function ReservaForm({
     }
   }
 
+  // Cierra el dialogo y actualiza el catalogo cuando alguien elige buscar
+  // otro horario despues de un conflicto.
   function elegirOtroHorario() {
     onBooked()
     close()
@@ -127,6 +136,7 @@ export function ReservaForm({
           <Icon name="close" />
         </button>
       </div>
+      {/* Muestra el resumen de la reserva ya guardada por el servidor. */}
       {estado === 'exito' && reservaConfirmada ? (
         <>
           <div className="success-mark">
@@ -178,6 +188,7 @@ export function ReservaForm({
         </>
       ) : estado === 'conflicto' ? (
         <>
+          {/* Avisa que el horario ya no esta libre y ofrece elegir otro. */}
           <h2 id={prefix + '-title'}>Ese horario ya no está disponible.</h2>
           <p id={prefix + '-note'} className="dialog-note">
             {mensajeError ||
@@ -193,6 +204,7 @@ export function ReservaForm({
         </>
       ) : (
         <>
+          {/* Formulario para completar los datos antes de enviar la reserva. */}
           <h2 id={prefix + '-title'}>Un paso más para empezar.</h2>
           <p id={prefix + '-note'} className="dialog-note">
             Completá tus datos para confirmar la reserva con el servidor.

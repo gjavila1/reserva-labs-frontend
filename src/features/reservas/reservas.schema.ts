@@ -1,11 +1,9 @@
 import { z } from 'zod'
 import type { ReservaErrors } from './reservas.types'
 
-/**
- * Mismas reglas que el backend (crearReservaSchema en la guia del curso):
- * el cliente valida para dar feedback rapido, el servidor valida siempre.
- * Pendiente confirmar con el equipo de backend real: ver docs/FASE2.md.
- */
+// Aplica las mismas reglas que el servidor para avisar rapido si algo
+// esta mal completado, aunque el servidor siempre vuelve a revisar todo.
+// Estas reglas todavia deben confirmarse con el equipo que construye el servidor.
 export const reservaFormSchema = z
   .object({
     salaId: z.coerce
@@ -37,6 +35,8 @@ export const reservaFormSchema = z
 export type ReservaFormInput = z.input<typeof reservaFormSchema>
 export type ReservaFormOutput = z.output<typeof reservaFormSchema>
 
+// Revisa los datos del formulario y, si algo no cumple las reglas, junta
+// un mensaje corto por cada campo para mostrarlo debajo de su casilla.
 export function validateReservaForm(input: ReservaFormInput): {
   errors: ReservaErrors
   data: ReservaFormOutput | null

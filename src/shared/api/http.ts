@@ -1,6 +1,7 @@
 import { env } from '../config/env'
 
-/** Forma de error acordada con el backend: { error, detalles? }. */
+// Guarda el mensaje, el codigo de estado y los detalles que manda el servidor
+// cuando una peticion falla, para mostrarlos donde haga falta.
 export class ApiError extends Error {
   readonly status: number
   readonly detalles?: Record<string, string[] | undefined>
@@ -23,12 +24,14 @@ interface RequestOptions {
   signal?: AbortSignal
 }
 
-/** Cliente HTTP minimo y compartido. No usar fetch directo desde componentes. */
+// Punto unico por el que la aplicacion habla con el servidor. Ningun otro
+// archivo debe conectarse directo con el servidor, siempre pasa por aqui.
 export async function apiFetch<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
   let response: Response
+  // Envia la peticion al servidor y avisa si no se pudo conectar.
   try {
     response = await fetch(env.VITE_API_URL + path, {
       method: options.method ?? 'GET',
@@ -50,6 +53,8 @@ export async function apiFetch<T>(
 
   if (response.status === 204) return undefined as T
 
+  // Lee el cuerpo de la respuesta sin romper la aplicacion si viene vacio
+  // o si no tiene un formato valido.
   let payload: unknown = null
   try {
     payload = await response.json()
@@ -57,6 +62,7 @@ export async function apiFetch<T>(
     // sin cuerpo o no es JSON valido; payload se queda en null
   }
 
+  // Si el servidor respondio con un error, arma un mensaje claro para mostrar.
   if (!response.ok) {
     const body = payload as {
       error?: string

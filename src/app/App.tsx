@@ -81,6 +81,7 @@ export default function App() {
                 </ul>
               </aside>
             </div>
+            {/* Al buscar, arma una nueva consulta con lo elegido en el formulario. */}
             <form
               className="availability-search"
               onSubmit={(event) => {
@@ -145,6 +146,7 @@ export default function App() {
           </div>
         </section>
         <div className="content-inner">
+          {/* Avisa que el catalogo no pudo cargarse y ofrece intentar otra vez. */}
           {error && (
             <div className="demo-notice" role="alert">
               <span>NO PUDIMOS CARGAR EL CATÁLOGO</span>
@@ -172,6 +174,7 @@ export default function App() {
           </footer>
         </div>
       </main>
+      {/* Abre el dialogo de reserva solo cuando se eligio un horario. */}
       {selection && (
         <ReservaForm
           key={selection.sala.id + selection.inicio}

@@ -22,6 +22,8 @@ export function SalasCatalogo({
   const [busqueda, setBusqueda] = useState('')
   const [edificio, setEdificio] = useState('')
   const edificios = [...new Set(salas.map((sala) => sala.edificio))].sort()
+  // Reduce la lista completa de laboratorios a los que coinciden con el
+  // texto buscado, el edificio elegido y la cantidad de personas.
   const filtered = filtrarSalas(salas, busqueda, edificio).filter(
     (sala) => sala.capacidad >= query.personas,
   )
@@ -80,6 +82,7 @@ export function SalasCatalogo({
           />
         </label>
       </div>
+      {/* Muestra la carga, la lista de resultados o un aviso segun el caso. */}
       {loading ? (
         <div className="empty-state" role="status">
           <Icon name="search" size={28} />

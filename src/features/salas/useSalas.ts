@@ -17,6 +17,8 @@ export function useSalas(): UseSalasResult {
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
 
+  // Carga la lista de laboratorios apenas aparece la pantalla y cada vez
+  // que se pide actualizarla, guardando si esta cargando o si hubo un error.
   useEffect(() => {
     const controller = new AbortController()
 
@@ -42,6 +44,8 @@ export function useSalas(): UseSalasResult {
     return () => controller.abort()
   }, [reloadToken])
 
+  // Permite que otras partes de la pantalla pidan una nueva carga, por
+  // ejemplo despues de guardar una reserva.
   const reload = useCallback(() => setReloadToken((token) => token + 1), [])
 
   return { salas, loading, error, reload }

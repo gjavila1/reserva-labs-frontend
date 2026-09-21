@@ -6,6 +6,8 @@ import {
   type SalaConReservas,
 } from './schemas'
 
+// Pide al servidor la lista de laboratorios con sus reservas y confirma
+// que la respuesta tenga la forma que la aplicacion espera.
 export async function listarSalas(
   signal?: AbortSignal,
 ): Promise<SalaConReservas[]> {
@@ -24,6 +26,8 @@ export interface CrearReservaPayload {
   fin: string
 }
 
+// Envia una nueva reserva al servidor y confirma que la respuesta tenga
+// la forma que la aplicacion espera antes de darla por confirmada.
 export async function crearReserva(
   salaId: number,
   payload: CrearReservaPayload,
