@@ -5,17 +5,20 @@ El backend pertenece a otro repositorio y no esta incluido.
 
 ## Estado actual
 
-Fase 1: interfaz de laboratorios y formulario de vista previa, sin llamadas API ni
-persistencia. main conserva el esqueleto; esta fase se revisa mediante PR hacia dev.
+Fase 2: integracion real con el backend (ver docs/FASE2.md). El catalogo y las
+reservas usan GET /api/salas y POST /api/salas/:id/reservas; ya no hay datos de
+ejemplo ni vista previa local. main conserva el esqueleto; esta fase se revisa
+mediante PR hacia dev.
 
-Con npm run dev hay cuatro laboratorios de demostracion con imagenes y horarios.
-Se busca por fecha, hora, duracion y personas; se filtra por nombre y edificio.
-Al elegir una hora aparece el formulario. Revisar mi solicitud muestra una vista
-previa con feedback visual, sin enviar ni guardar reservas.
+Con npm run dev el catalogo, los horarios y el contador de reservas por dia vienen
+del backend configurado en VITE_API_URL. Se busca por fecha, hora, duracion y
+personas; se filtra por nombre y edificio. Al elegir una hora aparece el formulario;
+la reserva se confirma solo cuando el servidor responde con exito, y si el horario
+ya fue tomado se avisa el conflicto para elegir otro.
 
-Con npm run build y npm run preview no se muestra el catalogo ficticio: aparece el
-estado vacio hasta integrar la API en fase 2. Las imagenes ilustrativas se conservan
-en public/images; su origen y prompts estan en docs/IMAGENES.md.
+El backend real (AdrianE111/ReservaLabs) todavia no expone rutas; ver docs/FASE2.md
+para el contrato asumido, como se probo esta fase y que falta confirmar con el
+equipo de backend.
 
 ## Requisitos y arranque
 
@@ -23,12 +26,13 @@ Node.js 24 y npm. Trabajar fuera de OneDrive.
 
 ```sh
 npm ci
+cp .env.example .env.local   # ajustar VITE_API_URL al backend a usar
 npm run dev
 ```
 
-La configuracion futura de la API esta documentada en .env.example. Cuando se necesite,
-copiar a .env.local y ajustar VITE_API_URL. Todo VITE_ es publico; nunca incluir claves.
-Actualmente la aplicacion no consume esa variable ni necesita un backend para arrancar.
+La configuracion de la API esta en .env.example. Copiar a .env.local y ajustar
+VITE_API_URL antes de levantar el proyecto; sin esa variable la app no arranca
+(falla rapido con un mensaje claro). Todo VITE_ es publico; nunca incluir claves.
 
 ## Comandos
 
@@ -49,15 +53,16 @@ de horarios de demostracion (runner nativo de Node 24, sin dependencias nuevas).
 ## Estructura
 
 - src/app: composicion, navegacion y estado de seleccion del laboratorio.
-- src/features/salas: tipo Sala, fixtures, filtros, tarjetas y catalogo.
-- src/features/reservas: formulario, tipos, validacion y agenda de demostracion.
+- src/features/salas: tipo Sala, filtros, tarjetas, catalogo y carga real (useSalas).
+- src/features/reservas: formulario, validacion Zod y disponibilidad real.
 - src/shared/ui: iconos SVG reutilizables.
-- src/shared/api: futuro cliente HTTP compartido.
-- src/shared/config: futura configuracion centralizada.
+- src/shared/api: cliente HTTP compartido y esquemas Zod de la respuesta del backend.
+- src/shared/config: configuracion centralizada (VITE_API_URL), validada al arrancar.
 - src/styles: estilos base, layout, catalogo y formulario, con reglas responsive.
-- tests: casos de filtros, sala invalida, texto vacio y rango de fechas.
+- tests: casos de filtros, validacion de reservas y disponibilidad real.
 
-Consultar docs/FASE1.md para el alcance y las comprobaciones de esta entrega.
+Consultar docs/FASE1.md para el alcance de la interfaz y docs/FASE2.md para la
+integracion con el backend.
 
 ## Colaboracion
 

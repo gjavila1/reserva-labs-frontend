@@ -2,9 +2,11 @@
 
 ## Alcance actual
 
-Fase 1 autorizada: interfaz, componentes reutilizables, catalogo y formulario con vista
-previa. Datos de demostracion solo en desarrollo. No conectar API, persistir reservas
-ni declarar reservas confirmadas; esa integracion corresponde a fase 2.
+Fase 2 autorizada: integracion real con el backend documentado en la guia del curso
+(ver docs/FASE2.md). Catalogo y disponibilidad vienen de GET /api/salas; las reservas
+se crean contra POST /api/salas/:id/reservas con validacion Zod compatible con el
+servidor. El contrato de fechas/zona horaria y el codigo 409 por solapamiento estan
+pendientes de confirmar con el equipo de backend real; ver docs/FASE2.md.
 
 ## Flujo Git obligatorio
 
