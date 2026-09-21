@@ -21,15 +21,6 @@
   line-height: 1.8;
   margin-top: 8px;
 }
-.availability-key {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 10px;
-  white-space: nowrap;
-  color: var(--muted);
-}
-.availability-key i,
 .lab-availability i {
   width: 6px;
   height: 6px;
@@ -288,9 +279,6 @@
   }
 }
 @media (max-width: 800px) {
-  .availability-key {
-    display: none;
-  }
   .catalog-filters {
     align-items: start;
     flex-direction: column;

@@ -51,9 +51,6 @@ export function SalasCatalogo({
             {query.duracion === 1 ? 'hora' : 'horas'}
           </p>
         </div>
-        <span className="availability-key">
-          <i /> Disponibilidad en vivo
-        </span>
       </div>
       <div className="catalog-filters">
         <div
