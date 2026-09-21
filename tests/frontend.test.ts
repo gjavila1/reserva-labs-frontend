@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { filtrarSalas } from '../src/features/salas/salas.utils.ts'
-import { validatePreview } from '../src/features/reservas/reservas.preview.ts'
+import { validateReservaForm } from '../src/features/reservas/reservas.schema.ts'
 import {
   demoSlots,
   isSlotAvailable,
   tomorrow,
 } from '../src/features/reservas/disponibilidad.demo.ts'
+import {
+  slotsDisponibles,
+  reservasDelDia,
+} from '../src/features/reservas/disponibilidad.ts'
 
 const salas = [
   { id: 1, nombre: 'Electrónica', edificio: 'M', capacidad: 20 },
@@ -34,24 +38,47 @@ test('combina búsqueda y edificio sin modificar el catálogo', () => {
 test('permite un catálogo vacío sin fallar', () => {
   assert.deepEqual(filtrarSalas([], 'redes', 'M'), [])
 })
-test('una solicitud válida se puede previsualizar', () => {
-  assert.deepEqual(validatePreview(draft, [1, 2]), {})
+test('una solicitud válida no tiene errores y conserva los datos parseados', () => {
+  const { errors, data } = validateReservaForm(draft)
+  assert.deepEqual(errors, {})
+  assert.equal(data?.salaId, 1)
+  assert.equal(data?.responsable, 'Ana López')
 })
-test('no acepta una sala inexistente ni texto compuesto solo por espacios', () => {
-  const errors = validatePreview(
-    { ...draft, salaId: '99', responsable: '   ', motivo: '  ' },
-    [1, 2],
-  )
-  assert.deepEqual(Object.keys(errors), ['salaId', 'responsable', 'motivo'])
+test('no acepta una sala inválida ni texto compuesto solo por espacios', () => {
+  const { errors } = validateReservaForm({
+    ...draft,
+    salaId: '0',
+    responsable: '   ',
+    motivo: '  ',
+  })
+  assert.deepEqual(Object.keys(errors).sort(), [
+    'motivo',
+    'responsable',
+    'salaId',
+  ])
 })
 test('rechaza horarios iguales o invertidos', () => {
-  assert.ok(validatePreview({ ...draft, fin: draft.inicio }, [1]).fin)
-  assert.ok(validatePreview({ ...draft, fin: '2026-12-01T13:00' }, [1]).fin)
+  assert.ok(validateReservaForm({ ...draft, fin: draft.inicio }).errors.fin)
+  assert.ok(
+    validateReservaForm({ ...draft, fin: '2026-12-01T13:00' }).errors.fin,
+  )
 })
 test('identifica fechas ausentes o inválidas', () => {
-  const errors = validatePreview({ ...draft, inicio: '', fin: 'invalida' }, [1])
+  const { errors } = validateReservaForm({
+    ...draft,
+    inicio: '',
+    fin: 'invalida',
+  })
   assert.ok(errors.inicio)
   assert.ok(errors.fin)
+})
+test('rechaza reservas en el pasado', () => {
+  const { errors } = validateReservaForm({
+    ...draft,
+    inicio: '2020-01-01T10:00',
+    fin: '2020-01-01T11:00',
+  })
+  assert.ok(errors.inicio)
 })
 
 test('los horarios contiguos no se consideran superpuestos', () => {
@@ -88,4 +115,48 @@ test('los intervalos seleccionables conservan la fecha y duración consultadas',
 test('mañana conserva la fecha local al cambiar de mes y año', () => {
   assert.equal(tomorrow(new Date(2026, 11, 31, 23, 30)), '2027-01-01')
   assert.equal(tomorrow(new Date(2026, 1, 28, 12)), '2026-03-01')
+})
+
+const salaConReservas = {
+  id: 1,
+  nombre: 'Laboratorio de programación',
+  edificio: 'M',
+  capacidad: 30,
+  reservas: [
+    {
+      id: 1,
+      responsable: 'Ana López',
+      motivo: 'Práctica',
+      inicio: new Date('2026-12-10T10:00:00'),
+      fin: new Date('2026-12-10T11:00:00'),
+      salaId: 1,
+    },
+    {
+      id: 2,
+      responsable: 'Beto Cruz',
+      motivo: 'Clase',
+      inicio: new Date('2026-12-11T09:00:00'),
+      fin: new Date('2026-12-11T10:00:00'),
+      salaId: 1,
+    },
+  ],
+}
+
+test('los horarios reales excluyen reservas de otros días', () => {
+  const slots = slotsDisponibles(salaConReservas, {
+    fecha: '2026-12-10',
+    hora: 9,
+    duracion: 1,
+    personas: 20,
+  })
+  assert.deepEqual(
+    slots.map((slot) => slot.available),
+    [true, false, true],
+  )
+})
+
+test('el contador de reservas del día solo cuenta la fecha consultada', () => {
+  assert.equal(reservasDelDia(salaConReservas, '2026-12-10'), 1)
+  assert.equal(reservasDelDia(salaConReservas, '2026-12-11'), 1)
+  assert.equal(reservasDelDia(salaConReservas, '2026-12-12'), 0)
 })
