@@ -7,11 +7,11 @@ const normalize = (value: string) =>
     .toLowerCase()
     .trim()
 
-export function filtrarSalas(
-  salas: Sala[],
+export function filtrarSalas<T extends Sala>(
+  salas: T[],
   busqueda: string,
   edificio: string,
-): Sala[] {
+): T[] {
   const query = normalize(busqueda)
   return salas.filter(
     (sala) =>

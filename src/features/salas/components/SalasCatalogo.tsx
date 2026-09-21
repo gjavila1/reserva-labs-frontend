@@ -1,20 +1,22 @@
 import { useState } from 'react'
 import { Icon } from '../../../shared/ui/Icon'
-import type { Sala } from '../salas.types'
 import { filtrarSalas } from '../salas.utils'
 import { SalaCard } from './SalaCard'
 import type {
   BusquedaHorario,
   SeleccionHorario,
-} from '../../reservas/disponibilidad.demo'
+} from '../../reservas/disponibilidad'
+import type { SalaConReservas } from '../../../shared/api/schemas'
 
 export function SalasCatalogo({
   salas,
   query,
+  loading,
   onSelect,
 }: {
-  salas: Sala[]
+  salas: SalaConReservas[]
   query: BusquedaHorario
+  loading: boolean
   onSelect: (selection: SeleccionHorario) => void
 }) {
   const [busqueda, setBusqueda] = useState('')
@@ -50,7 +52,7 @@ export function SalasCatalogo({
           </p>
         </div>
         <span className="availability-key">
-          <i /> Horarios de demostración
+          <i /> Disponibilidad en vivo
         </span>
       </div>
       <div className="catalog-filters">
@@ -81,7 +83,13 @@ export function SalasCatalogo({
           />
         </label>
       </div>
-      {filtered.length ? (
+      {loading ? (
+        <div className="empty-state" role="status">
+          <Icon name="search" size={28} />
+          <h3>Cargando laboratorios…</h3>
+          <p>Estamos consultando la disponibilidad con el servidor.</p>
+        </div>
+      ) : filtered.length ? (
         <ul className="lab-grid" role="list">
           {filtered.map((sala) => (
             <SalaCard
@@ -98,12 +106,12 @@ export function SalasCatalogo({
           <h3>
             {salas.length
               ? 'No encontramos espacios con estos filtros'
-              : 'Estamos preparando el catálogo'}
+              : 'No hay laboratorios disponibles por ahora'}
           </h3>
           <p>
             {salas.length
               ? 'Probá con menos personas, otro nombre o un edificio diferente.'
-              : 'Los laboratorios aparecerán al conectar la información del campus.'}
+              : 'Volvé a intentarlo en unos minutos.'}
           </p>
           {(busqueda || edificio) && (
             <button
@@ -118,7 +126,7 @@ export function SalasCatalogo({
       )}
       <p className="catalog-footnote">
         <Icon name="info" size={15} /> Las horas tachadas están ocupadas o fuera
-        del horario de esta demo. Horario local del dispositivo.
+        del horario disponible. Horario local del dispositivo.
       </p>
     </section>
   )

@@ -1,18 +1,16 @@
 import { useState } from 'react'
 import { SalasCatalogo } from '../features/salas/components/SalasCatalogo'
 import { ReservaForm } from '../features/reservas/components/ReservaForm'
-import { salasDemo } from '../features/salas/salas.demo'
+import { useSalas } from '../features/salas/useSalas'
 import {
   tomorrow,
   type BusquedaHorario,
   type SeleccionHorario,
-} from '../features/reservas/disponibilidad.demo'
+} from '../features/reservas/disponibilidad'
 import { Icon } from '../shared/ui/Icon'
-import type { Sala } from '../features/salas/salas.types'
-
-const salas: Sala[] = import.meta.env.DEV ? salasDemo : []
 
 export default function App() {
+  const { salas, loading, error, reload } = useSalas()
   const [query, setQuery] = useState<BusquedaHorario>(() => ({
     fecha: tomorrow(),
     hora: 9,
@@ -131,14 +129,19 @@ export default function App() {
           </div>
         </section>
         <div className="content-inner">
-          <div className="demo-notice">
-            <span>DEMO INTERACTIVA</span>
-            <p>
-              {import.meta.env.DEV
-                ? 'Espacios, imágenes y horarios de ejemplo. No se realizan reservas reales.'
-                : 'El catálogo real estará disponible al conectar el servicio de reservas.'}
-            </p>
-          </div>
+          {error && (
+            <div className="demo-notice" role="alert">
+              <span>NO PUDIMOS CARGAR EL CATÁLOGO</span>
+              <p>{error}</p>
+              <button
+                type="button"
+                className="button button-outline"
+                onClick={reload}
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
           <section
             id="reservation-guide"
             className="guide"
@@ -155,12 +158,17 @@ export default function App() {
                 interese.
               </li>
               <li>
-                <strong>Revisá tus datos.</strong> Esta demo prepara una
-                solicitud sin enviarla.
+                <strong>Revisá tus datos.</strong> Confirmamos tu reserva solo
+                cuando el servidor la registre.
               </li>
             </ol>
           </section>
-          <SalasCatalogo salas={salas} query={query} onSelect={setSelection} />
+          <SalasCatalogo
+            salas={salas}
+            query={query}
+            loading={loading}
+            onSelect={setSelection}
+          />
           <section
             className="booking-explainer"
             aria-label="Reservar en tres pasos"
@@ -196,6 +204,7 @@ export default function App() {
           key={selection.sala.id + selection.inicio}
           selection={selection}
           onClose={() => setSelection(null)}
+          onBooked={reload}
         />
       )}
     </div>
