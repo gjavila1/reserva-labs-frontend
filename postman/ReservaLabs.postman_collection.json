@@ -1,0 +1,358 @@
+{
+  "info": {
+    "name": "Reserva Labs - Contrato frontend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Preparada para fase 3. Requiere backend real y base de pruebas; no constituye evidencia de ejecucion."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3010"
+    },
+    {
+      "key": "salaId",
+      "value": ""
+    },
+    {
+      "key": "salaInexistenteId",
+      "value": ""
+    },
+    {
+      "key": "confirmarBasePruebas",
+      "value": "NO"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Catalogo con reservas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/salas"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.collectionVariables.unset('reservaCreadaId');"]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Contrato de salas y reservas', () => { const salas=pm.response.json(); pm.expect(salas).to.be.an('array'); salas.forEach(s => { pm.expect(s.id).to.be.a('number').above(0); pm.expect(s.nombre).to.be.a('string'); pm.expect(s.edificio).to.be.a('string'); pm.expect(s.capacidad).to.be.a('number').above(0); pm.expect(s.reservas).to.be.an('array'); s.reservas.forEach(r => { pm.expect(r.salaId).to.equal(s.id); pm.expect(r.id).to.be.a('number').above(0); pm.expect(r.responsable).to.be.a('string'); pm.expect(r.motivo).to.be.a('string'); pm.expect(Number.isFinite(Date.parse(r.inicio))).to.equal(true); pm.expect(Date.parse(r.fin)).to.be.above(Date.parse(r.inicio)); }); }); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Crear reserva valida",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/salas/{{salaId}}/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"responsable\": \"Prueba de integracion\",\n  \"motivo\": \"Verificacion del contrato\",\n  \"inicio\": \"{{inicio}}\",\n  \"fin\": \"{{fin}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('confirmarBasePruebas') !== 'SI') { pm.execution.skipRequest(); throw new Error('Confirmar base de pruebas antes de crear datos'); }",
+              "if (!/^[1-9][0-9]*$/.test(String(pm.collectionVariables.get('salaId')))) { pm.execution.skipRequest(); throw new Error('Configurar salaId existente'); }",
+              "const inicio = new Date(); inicio.setUTCDate(inicio.getUTCDate() + 7); inicio.setUTCHours(15, 0, 0, 0);",
+              "pm.collectionVariables.set('inicio', inicio.toISOString());",
+              "pm.collectionVariables.set('fin', new Date(inicio.getTime() + 3600000).toISOString());",
+              "pm.collectionVariables.unset('reservaCreadaId');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Reserva creada segun contrato', () => { const r=pm.response.json(); pm.expect(r.id).to.be.a('number').above(0); pm.expect(r.salaId).to.equal(Number(pm.collectionVariables.get('salaId'))); pm.expect(r.responsable).to.equal('Prueba de integracion'); pm.expect(r.motivo).to.equal('Verificacion del contrato'); pm.expect(Date.parse(r.inicio)).to.equal(Date.parse(pm.collectionVariables.get('inicio'))); pm.expect(Date.parse(r.fin)).to.equal(Date.parse(pm.collectionVariables.get('fin'))); if(pm.response.code===201) pm.collectionVariables.set('reservaCreadaId',r.id); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Verificar persistencia",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/salas"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Reserva persistida en catalogo', () => { const id=Number(pm.collectionVariables.get('reservaCreadaId')); pm.expect(id, 'Debe haberse creado una reserva en este recorrido').to.be.above(0); const s=pm.response.json().find(s => s.id===Number(pm.collectionVariables.get('salaId'))); pm.expect(s).to.exist; const r=s.reservas.find(r=>r.id===id); pm.expect(r).to.exist; pm.expect(r.responsable).to.equal('Prueba de integracion'); pm.expect(r.motivo).to.equal('Verificacion del contrato'); pm.expect(Date.parse(r.inicio)).to.equal(Date.parse(pm.collectionVariables.get('inicio'))); pm.expect(Date.parse(r.fin)).to.equal(Date.parse(pm.collectionVariables.get('fin'))); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Responsable invalido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/salas/{{salaId}}/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"responsable\": \"x\",\n  \"motivo\": \"Verificacion del contrato\",\n  \"inicio\": \"{{inicio}}\",\n  \"fin\": \"{{fin}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('confirmarBasePruebas') !== 'SI') { pm.execution.skipRequest(); throw new Error('Confirmar base de pruebas antes de crear datos'); }",
+              "if (!/^[1-9][0-9]*$/.test(String(pm.collectionVariables.get('salaId')))) { pm.execution.skipRequest(); throw new Error('Configurar salaId existente'); }",
+              "const inicio = new Date(); inicio.setUTCDate(inicio.getUTCDate() + 7); inicio.setUTCHours(15, 0, 0, 0);",
+              "pm.collectionVariables.set('inicio', inicio.toISOString());",
+              "pm.collectionVariables.set('fin', new Date(inicio.getTime() + 3600000).toISOString());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Error de responsable', () => { const b=pm.response.json(); pm.expect(b.error).to.be.a('string'); pm.expect(b.detalles.responsable).to.be.an('array').that.is.not.empty; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Motivo invalido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/salas/{{salaId}}/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"responsable\": \"Prueba de integracion\",\n  \"motivo\": \"\",\n  \"inicio\": \"{{inicio}}\",\n  \"fin\": \"{{fin}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('confirmarBasePruebas') !== 'SI') { pm.execution.skipRequest(); throw new Error('Confirmar base de pruebas antes de crear datos'); }",
+              "if (!/^[1-9][0-9]*$/.test(String(pm.collectionVariables.get('salaId')))) { pm.execution.skipRequest(); throw new Error('Configurar salaId existente'); }",
+              "const inicio = new Date(); inicio.setUTCDate(inicio.getUTCDate() + 7); inicio.setUTCHours(15, 0, 0, 0);",
+              "pm.collectionVariables.set('inicio', inicio.toISOString());",
+              "pm.collectionVariables.set('fin', new Date(inicio.getTime() + 3600000).toISOString());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Error de motivo', () => { const b=pm.response.json(); pm.expect(b.error).to.be.a('string'); pm.expect(b.detalles.motivo).to.be.an('array').that.is.not.empty; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Fin anterior al inicio",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/salas/{{salaId}}/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"responsable\": \"Prueba de integracion\",\n  \"motivo\": \"Verificacion del contrato\",\n  \"inicio\": \"{{fin}}\",\n  \"fin\": \"{{inicio}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('confirmarBasePruebas') !== 'SI') { pm.execution.skipRequest(); throw new Error('Confirmar base de pruebas antes de crear datos'); }",
+              "if (!/^[1-9][0-9]*$/.test(String(pm.collectionVariables.get('salaId')))) { pm.execution.skipRequest(); throw new Error('Configurar salaId existente'); }",
+              "const inicio = new Date(); inicio.setUTCDate(inicio.getUTCDate() + 7); inicio.setUTCHours(15, 0, 0, 0);",
+              "pm.collectionVariables.set('inicio', inicio.toISOString());",
+              "pm.collectionVariables.set('fin', new Date(inicio.getTime() + 3600000).toISOString());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Error de fin', () => { const b=pm.response.json(); pm.expect(b.error).to.be.a('string'); pm.expect(b.detalles.fin).to.be.an('array').that.is.not.empty; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Fecha pasada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/salas/{{salaId}}/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"responsable\": \"Prueba de integracion\",\n  \"motivo\": \"Verificacion del contrato\",\n  \"inicio\": \"2020-01-01T15:00:00.000Z\",\n  \"fin\": \"2020-01-01T16:00:00.000Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('confirmarBasePruebas') !== 'SI') { pm.execution.skipRequest(); throw new Error('Confirmar base de pruebas antes de crear datos'); }",
+              "if (!/^[1-9][0-9]*$/.test(String(pm.collectionVariables.get('salaId')))) { pm.execution.skipRequest(); throw new Error('Configurar salaId existente'); }",
+              "const inicio = new Date(); inicio.setUTCDate(inicio.getUTCDate() + 7); inicio.setUTCHours(15, 0, 0, 0);",
+              "pm.collectionVariables.set('inicio', inicio.toISOString());",
+              "pm.collectionVariables.set('fin', new Date(inicio.getTime() + 3600000).toISOString());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Error de inicio', () => { const b=pm.response.json(); pm.expect(b.error).to.be.a('string'); pm.expect(b.detalles.inicio).to.be.an('array').that.is.not.empty; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Sala inexistente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/salas/{{salaInexistenteId}}/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"responsable\": \"Prueba de integracion\",\n  \"motivo\": \"Verificacion del contrato\",\n  \"inicio\": \"{{inicio}}\",\n  \"fin\": \"{{fin}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('confirmarBasePruebas') !== 'SI') { pm.execution.skipRequest(); throw new Error('Confirmar base de pruebas antes de crear datos'); }",
+              "if (!/^[1-9][0-9]*$/.test(String(pm.collectionVariables.get('salaId')))) { pm.execution.skipRequest(); throw new Error('Configurar salaId existente'); }",
+              "const inicio = new Date(); inicio.setUTCDate(inicio.getUTCDate() + 7); inicio.setUTCHours(15, 0, 0, 0);",
+              "pm.collectionVariables.set('inicio', inicio.toISOString());",
+              "pm.collectionVariables.set('fin', new Date(inicio.getTime() + 3600000).toISOString());",
+              "if (!/^[1-9][0-9]*$/.test(String(pm.collectionVariables.get('salaInexistenteId')))) { pm.execution.skipRequest(); throw new Error('Configurar salaInexistenteId confirmado con backend'); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+              "pm.test('Error legible', () => pm.expect(pm.response.json().error).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

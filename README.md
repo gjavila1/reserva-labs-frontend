@@ -101,3 +101,9 @@ los archivos locales no las activan. Esta fase no configura despliegues.
 - [Variables publicas de Vite](https://vite.dev/guide/env-and-mode)
 - [Instrucciones de Codex](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
 - [Proteccion de ramas](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+
+## Fase 3
+
+La preparacion de pruebas y documentacion esta en `docs/FASE3.md`. La coleccion
+del contrato se encuentra en `postman/ReservaLabs.postman_collection.json`.
+Los casos que requieren el backend real permanecen identificados como pendientes.

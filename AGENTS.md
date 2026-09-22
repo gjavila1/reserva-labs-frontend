@@ -8,6 +8,10 @@ se crean contra POST /api/salas/:id/reservas con validacion Zod compatible con e
 servidor. El contrato de fechas/zona horaria y el codigo 409 por solapamiento estan
 pendientes de confirmar con el equipo de backend real; ver docs/FASE2.md.
 
+Fase 3 autorizada para pruebas y documentacion. No declarar aprobada la integracion
+real mientras el backend no exponga sus rutas y se ejecute la matriz de docs/FASE3.md.
+Nunca copiar credenciales de Supabase al frontend ni a archivos versionados.
+
 ## Flujo Git obligatorio
 
 - main conserva el esqueleto inicial hasta la entrega final.
