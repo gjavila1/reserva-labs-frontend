@@ -1,11 +1,11 @@
 import { Icon } from '../../../shared/ui/Icon'
-import type { Sala } from '../salas.types'
 import {
-  demoSlots,
-  demoBookingCount,
+  slotsDisponibles,
+  reservasDelDia,
   type BusquedaHorario,
   type SeleccionHorario,
-} from '../../reservas/disponibilidad.demo'
+} from '../../reservas/disponibilidad'
+import type { SalaConReservas } from '../../../shared/api/schemas'
 
 const presentation: Record<
   number,
@@ -37,13 +37,16 @@ export function SalaCard({
   query,
   onSelect,
 }: {
-  sala: Sala
+  sala: SalaConReservas
   query: BusquedaHorario
   onSelect: (selection: SeleccionHorario) => void
 }) {
+  // Calcula que horas siguen libres para esta sala segun la busqueda
+  // actual y cuantas reservas tiene ese mismo dia.
   const detail = presentation[sala.id]
-  const slots = demoSlots(sala.id, query)
+  const slots = slotsDisponibles(sala, query)
   const available = slots.some((slot) => slot.available)
+  const reservasHoy = reservasDelDia(sala, query.fecha)
   return (
     <li className="lab-card" role="listitem">
       <div className="lab-photo">
@@ -67,9 +70,8 @@ export function SalaCard({
           <span>·</span> Edificio {sala.edificio}
         </p>
         <p className="lab-bookings">
-          <Icon name="calendar" size={15} /> {demoBookingCount(sala.id)}{' '}
-          {demoBookingCount(sala.id) === 1 ? 'reserva' : 'reservas'} de ejemplo
-          este día
+          <Icon name="calendar" size={15} /> {reservasHoy}{' '}
+          {reservasHoy === 1 ? 'reserva' : 'reservas'} este día
         </p>
         <div className="lab-availability">
           <span className={available ? 'available' : 'unavailable'}>
@@ -78,6 +80,7 @@ export function SalaCard({
           <span>{query.duracion} h</span>
         </div>
         <div className="slot-list">
+          {/* Muestra cada hora posible como un boton y desactiva las horas ocupadas. */}
           {slots.map((slot) => (
             <button
               key={slot.hora}
@@ -88,9 +91,7 @@ export function SalaCard({
                 ', ' +
                 String(slot.hora).padStart(2, '0') +
                 ':00' +
-                (slot.available
-                  ? ', elegir horario de ejemplo'
-                  : ', no disponible')
+                (slot.available ? ', elegir horario' : ', no disponible')
               }
               onClick={() =>
                 onSelect({ sala, inicio: slot.inicio, fin: slot.fin })

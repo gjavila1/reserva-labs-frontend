@@ -1,18 +1,16 @@
 import { useState } from 'react'
 import { SalasCatalogo } from '../features/salas/components/SalasCatalogo'
 import { ReservaForm } from '../features/reservas/components/ReservaForm'
-import { salasDemo } from '../features/salas/salas.demo'
+import { useSalas } from '../features/salas/useSalas'
 import {
   tomorrow,
   type BusquedaHorario,
   type SeleccionHorario,
-} from '../features/reservas/disponibilidad.demo'
+} from '../features/reservas/disponibilidad'
 import { Icon } from '../shared/ui/Icon'
-import type { Sala } from '../features/salas/salas.types'
-
-const salas: Sala[] = import.meta.env.DEV ? salasDemo : []
 
 export default function App() {
+  const { salas, loading, error, reload } = useSalas()
   const [query, setQuery] = useState<BusquedaHorario>(() => ({
     fecha: tomorrow(),
     hora: 9,
@@ -20,7 +18,6 @@ export default function App() {
     personas: 20,
   }))
   const [selection, setSelection] = useState<SeleccionHorario | null>(null)
-  const [showGuide, setShowGuide] = useState(false)
   return (
     <div className="app-shell">
       <a className="skip-link" href="#contenido">
@@ -45,14 +42,6 @@ export default function App() {
             <a href="#laboratorios" aria-current="page">
               Explorar laboratorios
             </a>
-            <button
-              type="button"
-              onClick={() => setShowGuide(!showGuide)}
-              aria-expanded={showGuide}
-              aria-controls="reservation-guide"
-            >
-              Cómo reservar
-            </button>
           </nav>
           <span className="campus-label">
             <Icon name="pin" size={16} /> Campus universitario
@@ -62,11 +51,37 @@ export default function App() {
       <main id="contenido" tabIndex={-1}>
         <section className="discovery-header" aria-labelledby="page-title">
           <div className="discovery-inner">
-            <p className="eyebrow">UN ESPACIO PARA TU PRÓXIMA IDEA</p>
-            <h1 id="page-title">Encontrá el espacio para tu próxima sesión.</h1>
-            <p className="page-description">
-              Consultá espacios, compará horarios y prepará tu próxima sesión.
-            </p>
+            <div className="discovery-top">
+              <div className="discovery-copy">
+                <p className="eyebrow">UN ESPACIO PARA TU PRÓXIMA IDEA</p>
+                <h1 id="page-title">
+                  Encontrá el espacio para tu próxima sesión.
+                </h1>
+                <p className="page-description">
+                  Consultá espacios, compará horarios y prepará tu próxima
+                  sesión.
+                </p>
+              </div>
+              <aside className="steps-bubble" aria-label="Pasos para reservar">
+                <p>
+                  <strong>Pasos para reservar:</strong>
+                </p>
+                <ul>
+                  <li>
+                    <strong>1.</strong> Buscá un espacio por fecha, horario y
+                    tamaño de tu grupo.
+                  </li>
+                  <li>
+                    <strong>2.</strong> Elegí una hora en el laboratorio que te
+                    interese.
+                  </li>
+                  <li>
+                    <strong>3.</strong> Revisá tus datos y confirma tu reserva.
+                  </li>
+                </ul>
+              </aside>
+            </div>
+            {/* Al buscar, arma una nueva consulta con lo elegido en el formulario. */}
             <form
               className="availability-search"
               onSubmit={(event) => {
@@ -131,58 +146,26 @@ export default function App() {
           </div>
         </section>
         <div className="content-inner">
-          <div className="demo-notice">
-            <span>DEMO INTERACTIVA</span>
-            <p>
-              {import.meta.env.DEV
-                ? 'Espacios, imágenes y horarios de ejemplo. No se realizan reservas reales.'
-                : 'El catálogo real estará disponible al conectar el servicio de reservas.'}
-            </p>
-          </div>
-          <section
-            id="reservation-guide"
-            className="guide"
-            hidden={!showGuide}
-            aria-label="Cómo reservar"
-          >
-            <ol>
-              <li>
-                <strong>Buscá un espacio</strong> por fecha, horario y tamaño de
-                tu grupo.
-              </li>
-              <li>
-                <strong>Elegí una hora</strong> en el laboratorio que te
-                interese.
-              </li>
-              <li>
-                <strong>Revisá tus datos.</strong> Esta demo prepara una
-                solicitud sin enviarla.
-              </li>
-            </ol>
-          </section>
-          <SalasCatalogo salas={salas} query={query} onSelect={setSelection} />
-          <section
-            className="booking-explainer"
-            aria-label="Reservar en tres pasos"
-          >
-            <div>
-              <span>01</span>
-              <h3>Un espacio a tu medida</h3>
-              <p>Compará la capacidad y la ubicación de cada laboratorio.</p>
+          {/* Avisa que el catalogo no pudo cargarse y ofrece intentar otra vez. */}
+          {error && (
+            <div className="demo-notice" role="alert">
+              <span>NO PUDIMOS CARGAR EL CATÁLOGO</span>
+              <p>{error}</p>
+              <button
+                type="button"
+                className="button button-outline"
+                onClick={reload}
+              >
+                Reintentar
+              </button>
             </div>
-            <div>
-              <span>02</span>
-              <h3>El horario, a la vista</h3>
-              <p>
-                Elegí directamente una de las horas del espacio que te interesa.
-              </p>
-            </div>
-            <div>
-              <span>03</span>
-              <h3>Todo listo para revisar</h3>
-              <p>Completá los detalles y revisá el resumen de tu solicitud.</p>
-            </div>
-          </section>
+          )}
+          <SalasCatalogo
+            salas={salas}
+            query={query}
+            loading={loading}
+            onSelect={setSelection}
+          />
           <footer className="page-footer">
             <span>
               <strong>ReservaLabs</strong> · Espacios para aprender y crear.
@@ -191,11 +174,13 @@ export default function App() {
           </footer>
         </div>
       </main>
+      {/* Abre el dialogo de reserva solo cuando se eligio un horario. */}
       {selection && (
         <ReservaForm
           key={selection.sala.id + selection.inicio}
           selection={selection}
           onClose={() => setSelection(null)}
+          onBooked={reload}
         />
       )}
     </div>

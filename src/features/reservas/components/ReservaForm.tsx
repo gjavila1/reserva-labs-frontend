@@ -1,20 +1,35 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Icon } from '../../../shared/ui/Icon'
-import type { ReservaDraft, ReservaErrors } from '../reservas.types'
-import { formatPreviewDate, validatePreview } from '../reservas.preview'
-import type { SeleccionHorario } from '../disponibilidad.demo'
+import type { ReservaErrors } from '../reservas.types'
+import { validateReservaForm } from '../reservas.schema'
+import { formatPreviewDate } from '../reservas.preview'
+import type { SeleccionHorario } from '../disponibilidad'
+import {
+  crearReserva,
+  type CrearReservaPayload,
+} from '../../../shared/api/salas'
+import { ApiError } from '../../../shared/api/http'
+import type { ReservaApi } from '../../../shared/api/schemas'
+
+type EnvioEstado = 'idle' | 'enviando' | 'conflicto' | 'error' | 'exito'
 
 export function ReservaForm({
   selection,
   onClose,
+  onBooked,
 }: {
   selection: SeleccionHorario
   onClose: () => void
+  onBooked: () => void
 }) {
   const [fields, setFields] = useState({ responsable: '', motivo: '' })
   const [errors, setErrors] = useState<ReservaErrors>({})
-  const [preview, setPreview] = useState<ReservaDraft | null>(null)
+  const [estado, setEstado] = useState<EnvioEstado>('idle')
+  const [mensajeError, setMensajeError] = useState('')
+  const [reservaConfirmada, setReservaConfirmada] = useState<ReservaApi | null>(
+    null,
+  )
   const formRef = useRef<HTMLFormElement>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
   const prefix = useId()
@@ -22,17 +37,20 @@ export function ReservaForm({
     if (!dialogRef.current?.open) dialogRef.current?.showModal()
   }, [])
   const close = () => dialogRef.current?.close()
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const draft: ReservaDraft = {
-      ...fields,
-      responsable: fields.responsable.trim(),
-      motivo: fields.motivo.trim(),
+    if (estado === 'enviando') return
+
+    // Revisa los datos escritos antes de enviar nada al servidor y
+    // pone el foco en el primer campo con problemas si los hay.
+    const { errors: nextErrors, data } = validateReservaForm({
       salaId: String(selection.sala.id),
+      responsable: fields.responsable,
+      motivo: fields.motivo,
       inicio: selection.inicio,
       fin: selection.fin,
-    }
-    const nextErrors = validatePreview(draft, [selection.sala.id])
+    })
     setErrors(nextErrors)
     const firstError = Object.keys(nextErrors)[0]
     if (firstError) {
@@ -40,8 +58,63 @@ export function ReservaForm({
       if (input instanceof HTMLElement) input.focus()
       return
     }
-    setPreview(draft)
+    if (!data) return
+
+    // Bloquea el boton mientras se envia la reserva para evitar que se
+    // mande dos veces por error.
+    setEstado('enviando')
+    setMensajeError('')
+    const payload: CrearReservaPayload = {
+      responsable: data.responsable,
+      motivo: data.motivo,
+      inicio: data.inicio.toISOString(),
+      fin: data.fin.toISOString(),
+    }
+    try {
+      const reserva = await crearReserva(selection.sala.id, payload)
+      setReservaConfirmada(reserva)
+      setEstado('exito')
+      onBooked()
+    } catch (cause) {
+      // Alguien tomo ese horario mientras se completaba el formulario.
+      if (cause instanceof ApiError && cause.status === 409) {
+        setEstado('conflicto')
+        setMensajeError(cause.message)
+        return
+      }
+      // El servidor encontro datos invalidos y avisa que campo tiene el problema.
+      if (cause instanceof ApiError && cause.status === 400 && cause.detalles) {
+        const serverErrors: ReservaErrors = {}
+        for (const key of Object.keys(
+          cause.detalles,
+        ) as (keyof ReservaErrors)[]) {
+          const messages = cause.detalles[key]
+          if (messages?.length) serverErrors[key] = messages[0]
+        }
+        setErrors(serverErrors)
+        setEstado('error')
+        setMensajeError(cause.message)
+        return
+      }
+      // Cualquier otro problema, como una caida del servidor.
+      setEstado('error')
+      setMensajeError(
+        cause instanceof Error
+          ? cause.message
+          : 'No pudimos guardar tu reserva. Intenta de nuevo.',
+      )
+    }
   }
+
+  // Cierra el dialogo y actualiza el catalogo cuando alguien elige buscar
+  // otro horario despues de un conflicto.
+  function elegirOtroHorario() {
+    onBooked()
+    close()
+  }
+
+  const enviando = estado === 'enviando'
+
   return (
     <dialog
       ref={dialogRef}
@@ -52,7 +125,7 @@ export function ReservaForm({
     >
       <div className="dialog-top">
         <span className="eyebrow">
-          {preview ? 'SOLICITUD DE DEMOSTRACIÓN' : 'TU PRÓXIMA SESIÓN'}
+          {estado === 'exito' ? 'RESERVA CONFIRMADA' : 'TU PRÓXIMA SESIÓN'}
         </span>
         <button
           type="button"
@@ -63,7 +136,8 @@ export function ReservaForm({
           <Icon name="close" />
         </button>
       </div>
-      {preview ? (
+      {/* Muestra el resumen de la reserva ya guardada por el servidor. */}
+      {estado === 'exito' && reservaConfirmada ? (
         <>
           <div className="success-mark">
             <Icon name="check" size={28} />
@@ -75,11 +149,10 @@ export function ReservaForm({
               element?.focus()
             }}
           >
-            ¡Tu solicitud está lista!
+            ¡Tu reserva quedó registrada!
           </h2>
           <p id={prefix + '-note'} className="dialog-note">
-            Esta es una vista previa: no se ha enviado ni confirmado ninguna
-            reserva.
+            El servidor confirmó tu reserva. Ya podés cerrar esta ventana.
           </p>
           <dl className="preview-details">
             <div>
@@ -88,19 +161,21 @@ export function ReservaForm({
             </div>
             <div>
               <dt>Responsable</dt>
-              <dd>{preview.responsable}</dd>
+              <dd>{reservaConfirmada.responsable}</dd>
             </div>
             <div>
               <dt>Actividad</dt>
-              <dd>{preview.motivo}</dd>
+              <dd>{reservaConfirmada.motivo}</dd>
             </div>
             <div>
               <dt>Inicio</dt>
-              <dd>{formatPreviewDate(preview.inicio)}</dd>
+              <dd>
+                {formatPreviewDate(reservaConfirmada.inicio.toISOString())}
+              </dd>
             </div>
             <div>
               <dt>Fin</dt>
-              <dd>{formatPreviewDate(preview.fin)}</dd>
+              <dd>{formatPreviewDate(reservaConfirmada.fin.toISOString())}</dd>
             </div>
           </dl>
           <button
@@ -110,20 +185,29 @@ export function ReservaForm({
           >
             Volver a los laboratorios <Icon name="arrow" size={18} />
           </button>
+        </>
+      ) : estado === 'conflicto' ? (
+        <>
+          {/* Avisa que el horario ya no esta libre y ofrece elegir otro. */}
+          <h2 id={prefix + '-title'}>Ese horario ya no está disponible.</h2>
+          <p id={prefix + '-note'} className="dialog-note">
+            {mensajeError ||
+              'Alguien más reservó este horario mientras completabas el formulario.'}
+          </p>
           <button
-            className="text-button full-width"
+            className="button button-primary full-width"
             type="button"
-            onClick={() => setPreview(null)}
+            onClick={elegirOtroHorario}
           >
-            Editar mis datos
+            Elegir otro horario <Icon name="arrow" size={18} />
           </button>
         </>
       ) : (
         <>
+          {/* Formulario para completar los datos antes de enviar la reserva. */}
           <h2 id={prefix + '-title'}>Un paso más para empezar.</h2>
           <p id={prefix + '-note'} className="dialog-note">
-            Completá tus datos para revisar la solicitud. Es una demostración y
-            no se enviará.
+            Completá tus datos para confirmar la reserva con el servidor.
           </p>
           <div className="selected-space">
             <span>
@@ -153,6 +237,7 @@ export function ReservaForm({
                 minLength={3}
                 placeholder="¿Quién será responsable?"
                 value={fields.responsable}
+                disabled={enviando}
                 aria-invalid={Boolean(errors.responsable)}
                 aria-describedby={
                   errors.responsable ? prefix + '-responsable-error' : undefined
@@ -183,6 +268,7 @@ export function ReservaForm({
                 rows={3}
                 placeholder="Por ejemplo: práctica del proyecto de programación"
                 value={fields.motivo}
+                disabled={enviando}
                 aria-invalid={Boolean(errors.motivo)}
                 aria-describedby={
                   errors.motivo ? prefix + '-motivo-error' : undefined
@@ -198,11 +284,29 @@ export function ReservaForm({
                 </span>
               )}
             </div>
-            <button className="button button-primary full-width" type="submit">
-              Revisar mi solicitud <Icon name="arrow" size={18} />
+            {estado === 'error' && (
+              <p className="field-error" role="alert">
+                {mensajeError || 'No pudimos guardar tu reserva.'} Podés revisar
+                tus datos e intentar de nuevo.
+              </p>
+            )}
+            <button
+              className="button button-primary full-width"
+              type="submit"
+              disabled={enviando}
+              aria-busy={enviando}
+            >
+              {enviando ? (
+                'Enviando…'
+              ) : (
+                <>
+                  Confirmar reserva <Icon name="arrow" size={18} />
+                </>
+              )}
             </button>
             <p className="required-note">
-              Ambos campos son obligatorios. Podés volver a editar tus datos.
+              Ambos campos son obligatorios. Tu reserva se confirma solo cuando
+              el servidor la registra.
             </p>
           </form>
         </>
