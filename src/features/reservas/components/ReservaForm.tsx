@@ -55,7 +55,14 @@ export function ReservaForm({
     const firstError = Object.keys(nextErrors)[0]
     if (firstError) {
       const input = formRef.current?.elements.namedItem(firstError)
-      if (input instanceof HTMLElement) input.focus()
+      if (input instanceof HTMLElement) {
+        input.focus()
+      } else {
+        setMensajeError(
+          nextErrors[firstError as keyof ReservaErrors] ??
+            'El horario seleccionado ya no es válido.',
+        )
+      }
       return
     }
     if (!data) return
@@ -225,6 +232,20 @@ export function ReservaForm({
             </p>
           </div>
           <form ref={formRef} noValidate onSubmit={handleSubmit}>
+            {(errors.salaId || errors.inicio || errors.fin) && (
+              <div className="field-error" role="alert">
+                <p>
+                  {errors.salaId || errors.inicio || errors.fin || mensajeError}
+                </p>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={elegirOtroHorario}
+                >
+                  Elegir otro horario
+                </button>
+              </div>
+            )}
             <div className="form-field">
               <label htmlFor={prefix + '-responsable'}>
                 Tu nombre completo

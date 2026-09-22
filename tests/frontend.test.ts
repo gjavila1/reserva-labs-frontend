@@ -16,12 +16,13 @@ const salas = [
   { id: 1, nombre: 'Electrónica', edificio: 'M', capacidad: 20 },
   { id: 2, nombre: 'Redes', edificio: 'K', capacidad: 30 },
 ]
+const futureYear = new Date().getFullYear() + 1
 const draft = {
   salaId: '1',
   responsable: 'Ana López',
   motivo: 'Práctica de redes',
-  inicio: '2026-12-01T14:00',
-  fin: '2026-12-01T16:00',
+  inicio: `${futureYear}-12-01T14:00`,
+  fin: `${futureYear}-12-01T16:00`,
 }
 
 test('la búsqueda ignora tildes, mayúsculas y espacios exteriores', () => {
@@ -60,7 +61,8 @@ test('no acepta una sala inválida ni texto compuesto solo por espacios', () => 
 test('rechaza horarios iguales o invertidos', () => {
   assert.ok(validateReservaForm({ ...draft, fin: draft.inicio }).errors.fin)
   assert.ok(
-    validateReservaForm({ ...draft, fin: '2026-12-01T13:00' }).errors.fin,
+    validateReservaForm({ ...draft, fin: `${futureYear}-12-01T13:00` }).errors
+      .fin,
   )
 })
 test('identifica fechas ausentes o inválidas', () => {
@@ -159,4 +161,38 @@ test('el contador de reservas del día solo cuenta la fecha consultada', () => {
   assert.equal(reservasDelDia(salaConReservas, '2026-12-10'), 1)
   assert.equal(reservasDelDia(salaConReservas, '2026-12-11'), 1)
   assert.equal(reservasDelDia(salaConReservas, '2026-12-12'), 0)
+})
+
+test('una reserva que cruza medianoche bloquea horarios en ambos días', () => {
+  const salaNocturna = {
+    ...salaConReservas,
+    reservas: [
+      {
+        ...salaConReservas.reservas[0],
+        inicio: new Date('2026-12-10T18:00:00'),
+        fin: new Date('2026-12-11T10:00:00'),
+      },
+    ],
+  }
+
+  assert.equal(
+    slotsDisponibles(salaNocturna, {
+      fecha: '2026-12-10',
+      hora: 18,
+      duracion: 1,
+      personas: 20,
+    })[0].available,
+    false,
+  )
+  assert.equal(
+    slotsDisponibles(salaNocturna, {
+      fecha: '2026-12-11',
+      hora: 9,
+      duracion: 1,
+      personas: 20,
+    })[0].available,
+    false,
+  )
+  assert.equal(reservasDelDia(salaNocturna, '2026-12-10'), 1)
+  assert.equal(reservasDelDia(salaNocturna, '2026-12-11'), 1)
 })
