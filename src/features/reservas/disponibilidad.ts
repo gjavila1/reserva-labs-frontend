@@ -15,24 +15,18 @@ export interface HorarioSlot {
   fin: string
 }
 
-// Compara la fecha de una reserva con la fecha que el usuario esta buscando.
-function esMismaFechaLocal(fecha: Date, fechaConsultada: string): boolean {
-  const [year, month, day] = fechaConsultada.split('-').map(Number)
-  return (
-    fecha.getFullYear() === year &&
-    fecha.getMonth() + 1 === month &&
-    fecha.getDate() === day
-  )
+function fechaHoraLocal(fecha: string, hora = 0): Date {
+  const [year, month, day] = fecha.split('-').map(Number)
+  return new Date(year, month - 1, day, hora)
 }
 
-/** Reservas reales de una sala en la fecha consultada, como horas decimales. */
-function intervalosOcupados(sala: SalaConReservas, fecha: string) {
-  return sala.reservas
-    .filter((reserva) => esMismaFechaLocal(reserva.inicio, fecha))
-    .map((reserva) => ({
-      inicio: reserva.inicio.getHours() + reserva.inicio.getMinutes() / 60,
-      fin: reserva.fin.getHours() + reserva.fin.getMinutes() / 60,
-    }))
+function seSolapan(
+  inicioA: Date,
+  finA: Date,
+  inicioB: Date,
+  finB: Date,
+): boolean {
+  return inicioA < finB && finA > inicioB
 }
 
 /** Igual forma que la demo de fase 1, pero calculada desde reservas reales del backend. */
@@ -40,20 +34,33 @@ export function slotsDisponibles(
   sala: SalaConReservas,
   query: BusquedaHorario,
 ): HorarioSlot[] {
-  const ocupados = intervalosOcupados(sala, query.fecha)
-  return Array.from({ length: 3 }, (_, i) => query.hora + i).map((hora) => ({
-    hora,
-    available: isSlotAvailable(hora, query.duracion, ocupados),
-    inicio: query.fecha + 'T' + String(hora).padStart(2, '0') + ':00',
-    fin:
-      query.fecha +
-      'T' +
-      String(hora + query.duracion).padStart(2, '0') +
-      ':00',
-  }))
+  return Array.from({ length: 3 }, (_, i) => query.hora + i).map((hora) => {
+    const inicio = fechaHoraLocal(query.fecha, hora)
+    const fin = new Date(inicio.getTime() + query.duracion * 60 * 60 * 1000)
+    const dentroDeJornada = isSlotAvailable(hora, query.duracion, [])
+    const ocupada = sala.reservas.some((reserva) =>
+      seSolapan(inicio, fin, reserva.inicio, reserva.fin),
+    )
+
+    return {
+      hora,
+      available: dentroDeJornada && !ocupada,
+      inicio: query.fecha + 'T' + String(hora).padStart(2, '0') + ':00',
+      fin:
+        query.fecha +
+        'T' +
+        String(hora + query.duracion).padStart(2, '0') +
+        ':00',
+    }
+  })
 }
 
 // Cuenta cuantas reservas tiene esa sala en la fecha que se esta consultando.
 export function reservasDelDia(sala: SalaConReservas, fecha: string): number {
-  return intervalosOcupados(sala, fecha).length
+  const inicioDia = fechaHoraLocal(fecha)
+  const finDia = new Date(inicioDia)
+  finDia.setDate(finDia.getDate() + 1)
+  return sala.reservas.filter((reserva) =>
+    seSolapan(inicioDia, finDia, reserva.inicio, reserva.fin),
+  ).length
 }

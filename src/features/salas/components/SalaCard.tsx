@@ -7,31 +7,6 @@ import {
 } from '../../reservas/disponibilidad'
 import type { SalaConReservas } from '../../../shared/api/schemas'
 
-const presentation: Record<
-  number,
-  { image: string; category: string; description: string }
-> = {
-  1: {
-    image: 'programacion',
-    category: 'CÓMPUTO',
-    description: 'Código, proyectos y nuevas ideas.',
-  },
-  2: {
-    image: 'redes',
-    category: 'CONECTIVIDAD',
-    description: 'El espacio para conectar lo que aprendés.',
-  },
-  3: {
-    image: 'electronica',
-    category: 'EXPERIMENTACIÓN',
-    description: 'De la teoría a tu próximo prototipo.',
-  },
-  4: {
-    image: 'innovacion',
-    category: 'COLABORACIÓN',
-    description: 'Un lugar para crear en equipo.',
-  },
-}
 export function SalaCard({
   sala,
   query,
@@ -43,28 +18,27 @@ export function SalaCard({
 }) {
   // Calcula que horas siguen libres para esta sala segun la busqueda
   // actual y cuantas reservas tiene ese mismo dia.
-  const detail = presentation[sala.id]
   const slots = slotsDisponibles(sala, query)
   const available = slots.some((slot) => slot.available)
   const reservasHoy = reservasDelDia(sala, query.fecha)
   return (
     <li className="lab-card" role="listitem">
       <div className="lab-photo">
-        {detail && (
-          <img
-            src={import.meta.env.BASE_URL + 'images/' + detail.image + '.png'}
-            alt={'Imagen ilustrativa: ' + sala.nombre}
-            width="1536"
-            height="1024"
-            loading="lazy"
-          />
-        )}
+        <img
+          src={import.meta.env.BASE_URL + 'images/programacion.png'}
+          alt="Imagen ilustrativa de un laboratorio"
+          width="1536"
+          height="1024"
+          loading="lazy"
+        />
         <span className="location-tag">Edificio {sala.edificio}</span>
       </div>
       <div className="lab-content">
-        <p className="lab-category">{detail?.category ?? 'LABORATORIO'}</p>
+        <p className="lab-category">LABORATORIO</p>
         <h3>{sala.nombre}</h3>
-        <p className="lab-description">{detail?.description}</p>
+        <p className="lab-description">
+          Espacio disponible para aprender y crear.
+        </p>
         <p className="lab-meta">
           <Icon name="people" size={16} /> Hasta {sala.capacidad} personas{' '}
           <span>·</span> Edificio {sala.edificio}
