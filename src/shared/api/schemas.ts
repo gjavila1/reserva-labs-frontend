@@ -1,8 +1,7 @@
 import { z } from 'zod'
 
-// Describe como debe verse una reserva que llega desde el servidor.
-// Sigue el contrato de la guia del curso, todavia pendiente de confirmar
-// con el equipo que construye el servidor real, segun se explica en docs/FASE2.md.
+// Describe como debe verse una reserva que llega desde el servidor real.
+// El contrato compartido y sus comprobaciones se documentan en docs/FASE2.md.
 export const reservaApiSchema = z.object({
   id: z.number().int().positive(),
   responsable: z.string(),

@@ -15,7 +15,7 @@ servidor de referencia local (no versionado, fuera de este repositorio) que
 implementa ese mismo contrato con datos en memoria. Antes de fusionar a `dev`
 hay que confirmar con Adrián los puntos marcados como **pendiente** abajo.
 
-## Contrato asumido
+## Contrato implementado actualmente
 
 - `GET /api/salas` devuelve un arreglo de salas, cada una con su arreglo
   `reservas` incluido (`prisma include: { reservas: true }`), sin paginado.
@@ -25,16 +25,12 @@ hay que confirmar con Adrián los puntos marcados como **pendiente** abajo.
   si la validación falla, y `404` si la sala no existe.
 - Los campos `inicio` y `fin` viajan como texto ISO 8601 y el backend los
   interpreta como fecha/hora, igual que en `disponibilidad.demo.ts` de fase 1.
-- **Pendiente de confirmar con backend:** zona horaria. Por ahora el cliente
-  envía `Date.toISOString()` (UTC) tal como lo arma `new Date(valor-local)`
-  del navegador; no se aplicó ninguna conversión adicional. Si el backend
-  espera hora local de Guatemala sin offset, hay que ajustar el cliente.
-- **Pendiente de confirmar con backend:** el código `409 Conflict` cuando el
-  horario solicitado se solapa con una reserva existente. La guía del curso
-  lista la validación de solapamiento como "reto extra", no como parte del
-  contrato base. El formulario de esta fase ya maneja ese conflicto en la UI
-  (ver más abajo), pero el backend real debe implementarlo para que funcione
-  en producción; mientras tanto, dos reservas podrían solaparse sin aviso.
+- Los campos `inicio` y `fin` se envian como ISO 8601 UTC mediante
+  `Date.toISOString()` y el backend los convierte a `Date` antes de persistirlos.
+- El backend responde `409 Conflict` cuando el horario solicitado se solapa con
+  una reserva existente, y el frontend presenta ese conflicto sin confirmar.
+- Cada sala puede incluir `imagenUrl`, una URL publica absoluta de Supabase Storage.
+  El frontend la valida y presenta un estado sin imagen si falta o no carga.
 
 ## Cliente HTTP y configuración
 
@@ -99,12 +95,9 @@ Las pruebas de fase 1 sobre `filtrarSalas`, `isSlotAvailable`, `demoSlots` y
    con reintento; al reiniciar el servidor, "Reintentar" recupera el
    catálogo.
 
-## Para la fase 3
+## Actualizacion posterior
 
-- Confirmar con Adrián zona horaria y el código `409` de solapamiento antes de
-  dar por cerrado el contrato.
-- Cuando el backend real esté disponible, solo debería hacer falta ajustar
-  `VITE_API_URL`; si los nombres de campos o el formato de error difieren,
-  ajustar `src/shared/api/schemas.ts` y `src/shared/api/http.ts`.
-- Falta probar contra Postman/el backend real, no solo contra el servidor de
-  referencia local usado en esta fase.
+El backend real ya implementa las rutas anteriores, el conflicto `409`, Prisma
+con Supabase y el campo opcional `imagenUrl`. La coleccion Postman actualizada
+esta en `postman/`; su ejecucion final y la evidencia manual se registran en
+`docs/FASE3.md`.

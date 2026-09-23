@@ -1,4 +1,4 @@
-/** Campos de Sala acordes a la guía. Confirmar el contrato de la API en fase 2. */
+/** Campos base de una sala, compartidos por los calculos de disponibilidad. */
 export interface Sala {
   id: number
   nombre: string

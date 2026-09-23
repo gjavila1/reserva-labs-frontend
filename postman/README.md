@@ -1,27 +1,33 @@
 # Pruebas del contrato frontend / backend
 
-Importar ReservaLabs.postman_collection.json en Postman (formato v2.1).
-La coleccion esta preparada, pero no se ha ejecutado contra un backend real.
+Importar `ReservaLabs.postman_collection.json` como archivo en Postman. No pegar
+su ruta en el campo para importar una URL.
 
 ## Configuracion
 
-- baseUrl: origen del backend, sin barra final, por defecto http://localhost:3010.
-- salaId: ID positivo de una sala existente en una BASE DE PRUEBAS.
-- salaInexistenteId: ID positivo que el equipo confirme que no existe.
-- confirmarBasePruebas: cambiar NO por SI solo despues de confirmar el entorno.
+Definir las variables de la coleccion:
 
-Los POST crean datos reales: usar una base de pruebas. El caso valido crea una
-reserva y no la borra automaticamente. El equipo de backend debe acordar la limpieza.
-La coleccion genera fechas UTC futuras al iniciar el caso de creacion; no tiene
-fechas de vencimiento. Ajustar horario permitido antes de usarla si el backend
-agrega restricciones distintas del contrato base (usa 15:00-16:00 UTC a siete dias).
+- `baseUrl`: backend sin barra final; por defecto `http://localhost:3010`.
+- `salaId`: ID positivo de una sala existente; con la semilla actual puede usarse `8`.
+- `salaInexistenteId`: ID confirmado como inexistente, por ejemplo `999999`.
+- `confirmarBasePruebas`: mantener `NO` para ejecutar solo el GET; cambiar a `SI`
+  cuando se autorice crear reservas en la base conectada.
 
-Ejecutar en orden con Collection Runner; ante un fallo no dar la integracion por
-aprobada. Exportar resultados sin secretos e indicar commits front/back y fecha.
-La verificacion de persistencia compara el ID y los campos de la reserva creada
-con GET /api/salas. Los casos 400 prueban un error por vez.
+Los POST escriben datos reales. La reserva valida no se borra automaticamente. La
+coleccion genera un intervalo UTC de una hora, siete dias en el futuro.
 
-El conflicto 409, las carreras concurrentes y CORS se verifican por separado
-segun docs/FASE3.md. Postman no comprueba restricciones CORS del navegador.
-Esta coleccion verifica los endpoints consumidos por frontend; la coleccion
-completa de CRUD de salas (incluido DELETE) sigue siendo responsabilidad del backend.
+## Ejecucion
+
+1. Levantar el backend en el puerto configurado.
+2. Ejecutar `01 - Catalogo con reservas` y comprobar el estado 200, el contrato,
+   las seis URLs unicas y que cada imagen publica responda correctamente.
+3. Confirmar la base, cambiar `confirmarBasePruebas` a `SI` y abrir Collection Runner.
+4. Ejecutar las nueve solicitudes en el orden guardado.
+5. Guardar los resultados indicando fecha y commits de frontend y backend.
+
+La secuencia crea una reserva, intenta repetir el mismo intervalo para comprobar
+el `409`, verifica persistencia y prueba errores 400 y 404. Ante un fallo no marcar
+la integracion como aprobada.
+
+Postman no comprueba CORS, accesibilidad ni responsive. Esos casos se ejecutan con
+el frontend en un navegador siguiendo `docs/FASE3.md`.
