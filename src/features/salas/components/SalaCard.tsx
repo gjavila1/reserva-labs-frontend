@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Icon } from '../../../shared/ui/Icon'
 import {
   slotsDisponibles,
@@ -16,29 +17,37 @@ export function SalaCard({
   query: BusquedaHorario
   onSelect: (selection: SeleccionHorario) => void
 }) {
+  const [imagenFallida, setImagenFallida] = useState<string | null>(null)
+
   // Calcula que horas siguen libres para esta sala segun la busqueda
   // actual y cuantas reservas tiene ese mismo dia.
   const slots = slotsDisponibles(sala, query)
   const available = slots.some((slot) => slot.available)
   const reservasHoy = reservasDelDia(sala, query.fecha)
-  const imagenPredeterminada =
-    import.meta.env.BASE_URL + 'images/programacion.png'
-  const imagen = sala.imagenUrl ?? imagenPredeterminada
+  const mostrarImagen =
+    Boolean(sala.imagenUrl) && imagenFallida !== sala.imagenUrl
 
   return (
     <li className="lab-card" role="listitem">
       <div className="lab-photo">
-        <img
-          src={imagen}
-          alt={`Imagen ilustrativa de ${sala.nombre}`}
-          width="1536"
-          height="1024"
-          loading="lazy"
-          onError={(event) => {
-            event.currentTarget.onerror = null
-            event.currentTarget.src = imagenPredeterminada
-          }}
-        />
+        {mostrarImagen ? (
+          <img
+            src={sala.imagenUrl ?? undefined}
+            alt={`Imagen ilustrativa de ${sala.nombre}`}
+            width="1536"
+            height="1024"
+            loading="lazy"
+            onError={() => setImagenFallida(sala.imagenUrl ?? null)}
+          />
+        ) : (
+          <div
+            className="lab-image-placeholder"
+            role="img"
+            aria-label={`Imagen no disponible para ${sala.nombre}`}
+          >
+            Imagen no disponible
+          </div>
+        )}
         <span className="location-tag">Edificio {sala.edificio}</span>
       </div>
       <div className="lab-content">
