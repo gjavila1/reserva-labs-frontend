@@ -5,10 +5,10 @@ El backend pertenece a otro repositorio y no esta incluido.
 
 ## Estado actual
 
-Fase 2: integracion real con el backend (ver docs/FASE2.md). El catalogo y las
-reservas usan GET /api/salas y POST /api/salas/:id/reservas; ya no hay datos de
-ejemplo ni vista previa local. main conserva el esqueleto; esta fase se revisa
-mediante PR hacia dev.
+Las fases de interfaz, integracion y preparacion de pruebas estan incorporadas en
+`dev`. El catalogo y las reservas usan `GET /api/salas` y
+`POST /api/salas/:id/reservas`; ya no hay datos de ejemplo ni confirmaciones
+locales. `main` conserva el esqueleto hasta el PR final acordado por el equipo.
 
 Con npm run dev el catalogo, los horarios y el contador de reservas por dia vienen
 del backend configurado en VITE_API_URL. Se busca por fecha, hora, duracion y
@@ -16,9 +16,10 @@ personas; se filtra por nombre y edificio. Al elegir una hora aparece el formula
 la reserva se confirma solo cuando el servidor responde con exito, y si el horario
 ya fue tomado se avisa el conflicto para elegir otro.
 
-El backend real (AdrianE111/ReservaLabs) todavia no expone rutas; ver docs/FASE2.md
-para el contrato asumido, como se probo esta fase y que falta confirmar con el
-equipo de backend.
+El backend real (`AdrianE111/ReservaLabs`) expone las rutas consumidas por el
+frontend, persiste en Supabase, rechaza solapamientos con `409` y devuelve seis
+salas con `imagenUrl`. Las imagenes se sirven desde Supabase Storage; si una URL
+falta o falla, la tarjeta muestra `Imagen no disponible`.
 
 ## Requisitos y arranque
 
@@ -47,8 +48,8 @@ VITE_API_URL antes de levantar el proyecto; sin esa variable la app no arranca
 | npm run preview      | Previsualizar build local                |
 | npm run check        | Formato, lint, pruebas y build con tipos |
 
-Ejecutar npm test para las once pruebas de filtros, vista previa y solapamiento
-de horarios de demostracion (runner nativo de Node 24, sin dependencias nuevas).
+`npm test` ejecuta 21 pruebas de filtros, contrato de imagenes, validacion de
+reservas, fechas y solapamientos (runner nativo de Node 24).
 
 ## Estructura
 
@@ -61,8 +62,9 @@ de horarios de demostracion (runner nativo de Node 24, sin dependencias nuevas).
 - src/styles: estilos base, layout, catalogo y formulario, con reglas responsive.
 - tests: casos de filtros, validacion de reservas y disponibilidad real.
 
-Consultar docs/FASE1.md para el alcance de la interfaz y docs/FASE2.md para la
-integracion con el backend.
+Consultar `docs/FASE1.md` para el alcance inicial, `docs/FASE2.md` para la
+integracion, `docs/FASE3.md` para la matriz de pruebas y `docs/IMAGENES.md` para
+la gestion de imagenes.
 
 ## Colaboracion
 
@@ -75,6 +77,7 @@ main (esqueleto hasta entrega)
     feature/fase1-interfaz -> PR a dev
     feature/fase2-integracion -> PR a dev
     feature/fase3-pruebas-documentacion -> PR a dev
+    feature/imagenes-dinamicas -> PR a dev
   dev -> PR final a main
 ```
 
@@ -102,8 +105,9 @@ los archivos locales no las activan. Esta fase no configura despliegues.
 - [Instrucciones de Codex](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
 - [Proteccion de ramas](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 
-## Fase 3
+## Pruebas de integracion
 
-La preparacion de pruebas y documentacion esta en `docs/FASE3.md`. La coleccion
-del contrato se encuentra en `postman/ReservaLabs.postman_collection.json`.
-Los casos que requieren el backend real permanecen identificados como pendientes.
+La matriz y el registro de evidencia estan en `docs/FASE3.md`. La coleccion
+actualizada se encuentra en `postman/ReservaLabs.postman_collection.json` y
+comprueba catalogo, URLs de imagenes, creacion, persistencia, validaciones,
+solapamiento `409` y sala inexistente. Los POST modifican la base configurada.

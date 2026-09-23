@@ -2,7 +2,7 @@
   "info": {
     "name": "Reserva Labs - Contrato frontend",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Preparada para fase 3. Requiere backend real y base de pruebas; no constituye evidencia de ejecucion."
+    "description": "Coleccion actualizada para fase 3: valida catalogo, imagenes publicas, reservas, persistencia, solapamiento 409 y errores del contrato real."
   },
   "variable": [
     {
@@ -44,7 +44,9 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Contrato de salas y reservas', () => { const salas=pm.response.json(); pm.expect(salas).to.be.an('array'); salas.forEach(s => { pm.expect(s.id).to.be.a('number').above(0); pm.expect(s.nombre).to.be.a('string'); pm.expect(s.edificio).to.be.a('string'); pm.expect(s.capacidad).to.be.a('number').above(0); pm.expect(s.reservas).to.be.an('array'); s.reservas.forEach(r => { pm.expect(r.salaId).to.equal(s.id); pm.expect(r.id).to.be.a('number').above(0); pm.expect(r.responsable).to.be.a('string'); pm.expect(r.motivo).to.be.a('string'); pm.expect(Number.isFinite(Date.parse(r.inicio))).to.equal(true); pm.expect(Date.parse(r.fin)).to.be.above(Date.parse(r.inicio)); }); }); });"
+              "pm.test('Contrato de salas y reservas', () => { const salas=pm.response.json(); pm.expect(salas).to.be.an('array'); salas.forEach(s => { pm.expect(s.id).to.be.a('number').above(0); pm.expect(s.nombre).to.be.a('string'); pm.expect(s.edificio).to.be.a('string'); pm.expect(s.capacidad).to.be.a('number').above(0); pm.expect(s.reservas).to.be.an('array'); s.reservas.forEach(r => { pm.expect(r.salaId).to.equal(s.id); pm.expect(r.id).to.be.a('number').above(0); pm.expect(r.responsable).to.be.a('string'); pm.expect(r.motivo).to.be.a('string'); pm.expect(Number.isFinite(Date.parse(r.inicio))).to.equal(true); pm.expect(Date.parse(r.fin)).to.be.above(Date.parse(r.inicio)); }); }); });",
+              "pm.test('Imagenes publicas y unicas', () => { const salas=pm.response.json(); const urls=salas.map(s => s.imagenUrl); salas.forEach(s => { pm.expect(s.imagenUrl).to.be.a('string').and.match(/^https:\\/\\/.+\\/storage\\/v1\\/object\\/public\\/laboratorios\\/.+/); }); pm.expect(new Set(urls).size).to.equal(urls.length); });",
+              "pm.response.json().forEach(s => pm.sendRequest(s.imagenUrl, (error, response) => { pm.test(`Imagen accesible: ${s.nombre}`, () => { pm.expect(error).to.equal(null); pm.expect(response.code).to.be.oneOf([200, 304]); }); }));"
             ]
           }
         }
@@ -99,7 +101,51 @@
       ]
     },
     {
-      "name": "03 - Verificar persistencia",
+      "name": "03 - Rechazar reserva solapada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/salas/{{salaId}}/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"responsable\": \"Prueba de conflicto\",\n  \"motivo\": \"Mismo horario de integracion\",\n  \"inicio\": \"{{inicio}}\",\n  \"fin\": \"{{fin}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('confirmarBasePruebas') !== 'SI') { pm.execution.skipRequest(); throw new Error('Confirmar base de pruebas antes de crear datos'); }",
+              "if (!pm.collectionVariables.get('reservaCreadaId')) { pm.execution.skipRequest(); throw new Error('Ejecutar primero la creacion valida'); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "pm.test('Conflicto legible', () => pm.expect(pm.response.json().error).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Verificar persistencia",
       "request": {
         "method": "GET",
         "header": [],
@@ -119,7 +165,7 @@
       ]
     },
     {
-      "name": "04 - Responsable invalido",
+      "name": "05 - Responsable invalido",
       "request": {
         "method": "POST",
         "header": [
@@ -166,7 +212,7 @@
       ]
     },
     {
-      "name": "05 - Motivo invalido",
+      "name": "06 - Motivo invalido",
       "request": {
         "method": "POST",
         "header": [
@@ -213,7 +259,7 @@
       ]
     },
     {
-      "name": "06 - Fin anterior al inicio",
+      "name": "07 - Fin anterior al inicio",
       "request": {
         "method": "POST",
         "header": [
@@ -260,7 +306,7 @@
       ]
     },
     {
-      "name": "07 - Fecha pasada",
+      "name": "08 - Fecha pasada",
       "request": {
         "method": "POST",
         "header": [
@@ -307,7 +353,7 @@
       ]
     },
     {
-      "name": "08 - Sala inexistente",
+      "name": "09 - Sala inexistente",
       "request": {
         "method": "POST",
         "header": [
