@@ -15,8 +15,9 @@ git switch -c feat/nombre-del-componente
 ```
 
 Fases acordadas: feature/fase1-interfaz (Gerardo), feature/fase2-integracion
-(Sebastian) y feature/fase3-pruebas-documentacion (Gerardo). Crear cada rama desde
-dev actualizado al iniciar la fase. El otro integrante revisa su PR.
+(Sebastian), feature/fase3-pruebas-documentacion (Gerardo) y
+feature/imagenes-dinamicas (Gerardo). Crear cada rama desde dev actualizado al
+iniciar la tarea. El otro integrante revisa su PR.
 
 Prefijos para tareas adicionales: feat/ funcionalidad, fix/ correccion, chore/ configuracion, docs/ documentacion.
 Commits: feat: descripcion, fix: descripcion, chore: descripcion, docs: descripcion.
@@ -39,7 +40,7 @@ Cuando las funciones requeridas e integracion real esten probadas, ambos acuerda
 PR de dev hacia main. No abrirlo durante el desarrollo. La CI verifica que ese PR
 venga de dev del mismo repositorio, pero el equipo verifica que sea la entrega final.
 
-## Protecciones en GitHub (pendientes hasta crear el remoto)
+## Protecciones que deben verificarse en GitHub
 
 - Establecer dev como rama predeterminada para que los PR apunten alli.
 - Proteger main y dev: exigir PR, una aprobacion del companero y comentarios resueltos.

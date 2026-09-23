@@ -63,5 +63,6 @@ directamente seleccionables. No se copian valoraciones, precios ni marcas.
 Base clara, texto oscuro y acento rojo para acciones; tarjetas solo para espacios.
 El formulario aparece despues de seleccionar horario.
 
-Las fotografias son generadas e ilustrativas, no corresponden al campus real.
-Ver [IMAGENES.md](IMAGENES.md) para los archivos y prompts.
+Durante esta fase las fotografias eran locales, generadas e ilustrativas. Luego se
+migraron a Supabase Storage y se retiraron del frontend; ver
+[IMAGENES.md](IMAGENES.md).
