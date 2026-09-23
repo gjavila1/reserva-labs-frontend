@@ -11,6 +11,7 @@ import {
   slotsDisponibles,
   reservasDelDia,
 } from '../src/features/reservas/disponibilidad.ts'
+import { salaApiSchema } from '../src/shared/api/schemas.ts'
 
 const salas = [
   { id: 1, nombre: 'Electrónica', edificio: 'M', capacidad: 20 },
@@ -38,6 +39,33 @@ test('combina búsqueda y edificio sin modificar el catálogo', () => {
 })
 test('permite un catálogo vacío sin fallar', () => {
   assert.deepEqual(filtrarSalas([], 'redes', 'M'), [])
+})
+
+test('acepta una URL publica o un valor nulo para la imagen de una sala', () => {
+  const salaApi = {
+    id: 1,
+    nombre: 'Lab A · Redes',
+    edificio: 'M',
+    capacidad: 30,
+    reservas: [],
+  }
+
+  assert.equal(
+    salaApiSchema.safeParse({
+      ...salaApi,
+      imagenUrl:
+        'https://proyecto.supabase.co/storage/v1/object/public/laboratorios/redes.png',
+    }).success,
+    true,
+  )
+  assert.equal(
+    salaApiSchema.safeParse({ ...salaApi, imagenUrl: null }).success,
+    true,
+  )
+  assert.equal(
+    salaApiSchema.safeParse({ ...salaApi, imagenUrl: 'no-es-una-url' }).success,
+    false,
+  )
 })
 test('una solicitud válida no tiene errores y conserva los datos parseados', () => {
   const { errors, data } = validateReservaForm(draft)

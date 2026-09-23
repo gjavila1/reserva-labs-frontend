@@ -18,6 +18,7 @@ export const salaApiSchema = z.object({
   nombre: z.string(),
   edificio: z.string(),
   capacidad: z.number().int().positive(),
+  imagenUrl: z.string().url().nullable().optional(),
   reservas: z.array(reservaApiSchema),
 })
 

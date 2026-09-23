@@ -21,15 +21,23 @@ export function SalaCard({
   const slots = slotsDisponibles(sala, query)
   const available = slots.some((slot) => slot.available)
   const reservasHoy = reservasDelDia(sala, query.fecha)
+  const imagenPredeterminada =
+    import.meta.env.BASE_URL + 'images/programacion.png'
+  const imagen = sala.imagenUrl ?? imagenPredeterminada
+
   return (
     <li className="lab-card" role="listitem">
       <div className="lab-photo">
         <img
-          src={import.meta.env.BASE_URL + 'images/programacion.png'}
-          alt="Imagen ilustrativa de un laboratorio"
+          src={imagen}
+          alt={`Imagen ilustrativa de ${sala.nombre}`}
           width="1536"
           height="1024"
           loading="lazy"
+          onError={(event) => {
+            event.currentTarget.onerror = null
+            event.currentTarget.src = imagenPredeterminada
+          }}
         />
         <span className="location-tag">Edificio {sala.edificio}</span>
       </div>
